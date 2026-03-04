@@ -2,7 +2,7 @@
 
 from fastapi.testclient import TestClient
 
-from backend.main import app
+from backend.main import _get_cors_origins, app
 
 
 client = TestClient(app)
@@ -22,7 +22,7 @@ def test_health_endpoint_payload() -> None:
 
 def test_cors_allows_localhost_origin() -> None:
     """localhost からの CORS プリフライトを許可する。"""
-    cors_origin = app.user_middleware[0].kwargs["allow_origins"][0]
+    cors_origin = _get_cors_origins()[0]
     response = client.options(
         "/api/health",
         headers={
