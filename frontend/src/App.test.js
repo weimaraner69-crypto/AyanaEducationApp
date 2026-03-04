@@ -1,8 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+// ログイン画面にプロファイル選択ボタンが表示されることを確認
+test('renders profile selection buttons on login screen', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  // ユーザーA・ユーザーB のプロファイルボタンが存在することを検証
+  const userAButton = screen.getByText(/ユーザーA/i);
+  const userBButton = screen.getByText(/ユーザーB/i);
+  expect(userAButton).toBeInTheDocument();
+  expect(userBButton).toBeInTheDocument();
 });
