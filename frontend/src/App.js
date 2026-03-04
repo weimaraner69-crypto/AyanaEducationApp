@@ -49,6 +49,8 @@ const App = () => {
   const [userAnswer, setUserAnswer] = useState('');
   const [isAutoCollecting, setIsAutoCollecting] = useState(false);
   const [collectStep, setCollectStep] = useState(0);
+  const [apiHealth, setApiHealth] = useState({ state: 'idle', message: '未確認' });
+  const apiBaseUrl = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
   const TODAY = useMemo(() => new Date(), []);
 
   const profiles = useMemo(() => {
@@ -118,6 +120,30 @@ const App = () => {
       return () => clearInterval(interval);
     }
   }, [screen]);
+
+  useEffect(() => {
+    if (screen !== 'home') return undefined;
+
+    const controller = new AbortController();
+    const fetchHealth = async () => {
+      setApiHealth({ state: 'loading', message: '接続確認中...' });
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/health`, {
+          method: 'GET',
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        setApiHealth({ state: 'success', message: `接続成功: ${data.status}` });
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setApiHealth({ state: 'error', message: '接続失敗: バックエンドに接続できません' });
+      }
+    };
+
+    fetchHealth();
+    return () => controller.abort();
+  }, [screen, apiBaseUrl]);
 
   const resetToHome = () => { setScreen('home'); setSubject(null); setFeedback(null); setUserAnswer(''); };
 
@@ -219,6 +245,16 @@ const App = () => {
             </div>
           </div>
           <button onClick={handleLogout} className="p-3 bg-white border border-slate-200 rounded-xl text-rose-500 hover:bg-rose-50 shadow-sm transition-all"><LogOut size={18} /></button>
+        </div>
+        <div className="w-full max-w-md mb-6 bg-white rounded-2xl border border-slate-100 shadow-sm px-4 py-3">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Backend Health</p>
+          <p
+            data-testid="api-health-message"
+            className={`text-sm font-black ${apiHealth.state === 'success' ? 'text-emerald-600' : apiHealth.state === 'error' ? 'text-rose-600' : 'text-slate-500'}`}
+          >
+            {apiHealth.message}
+          </p>
+          <p className="text-[10px] font-mono text-slate-400 mt-1 truncate">{apiBaseUrl}/api/health</p>
         </div>
         {userRole === 'student' ? (
           <div className="w-full max-w-md space-y-8 animate-in fade-in duration-500 text-slate-900">

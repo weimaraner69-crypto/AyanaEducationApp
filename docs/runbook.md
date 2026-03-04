@@ -88,6 +88,17 @@ curl -s http://127.0.0.1:8000/api/health
 
 `BACKEND_CORS_ORIGINS` を設定すると、追加の CORS 許可オリジンをカンマ区切りで指定できる。
 
+### MiraStudy フロントエンド疎通確認（N-003）
+
+```bash
+# APIベースURLを指定してフロントエンド起動
+cd frontend
+REACT_APP_API_URL=http://127.0.0.1:8000 npm start
+
+# 期待値: ホーム画面の "Backend Health" に "接続成功: ok" が表示される
+# 接続失敗時は "接続失敗: バックエンドに接続できません" を表示
+```
+
 ### ポリシーチェック
 
 ```bash
