@@ -56,8 +56,8 @@ const App = () => {
     const sonInfo = calculateStudentInfo('2010-05-15', TODAY);
     const daughterInfo = calculateStudentInfo('2011-08-20', TODAY);
     return [
-      { id: 'son_masamune', name: 'ユーザーA', stage: sonInfo.stage, color: 'amber', icon: Pencil, age: sonInfo.age, gradeLabel: sonInfo.gradeLabel, isAdult: sonInfo.isAdult },
-      { id: 'daughter_ayana', name: 'ユーザーB', stage: daughterInfo.stage, color: 'indigo', icon: BookOpen, age: daughterInfo.age, gradeLabel: daughterInfo.gradeLabel, isAdult: daughterInfo.isAdult }
+      { id: 'user_a', name: 'ユーザーA', stage: sonInfo.stage, color: 'amber', icon: Pencil, age: sonInfo.age, gradeLabel: sonInfo.gradeLabel, isAdult: sonInfo.isAdult },
+      { id: 'user_b', name: 'ユーザーB', stage: daughterInfo.stage, color: 'indigo', icon: BookOpen, age: daughterInfo.age, gradeLabel: daughterInfo.gradeLabel, isAdult: daughterInfo.isAdult }
     ];
   }, [TODAY]);
 
