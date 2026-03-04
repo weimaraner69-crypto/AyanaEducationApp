@@ -21,6 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # スキャン対象ディレクトリ（プロジェクトに合わせて変更）
 SCAN_DIRS = [
+    REPO_ROOT / "backend",
     REPO_ROOT / "src",
     REPO_ROOT / "tests",
     REPO_ROOT / "scripts",
@@ -81,6 +82,8 @@ URL_PATTERN = r"https?://[^\s\"')\]>]+"
 
 # URL ホワイトリスト（マッチしたら許可）
 URL_ALLOWLIST_PATTERNS: list[str] = [
+    r"localhost",
+    r"127\.0\.0\.1",
     r"example\.com",
     r"github\.com",
     r"pypi\.org",

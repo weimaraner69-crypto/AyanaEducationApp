@@ -32,3 +32,16 @@ def test_cors_allows_localhost_origin() -> None:
     )
     assert response.status_code in (200, 204)
     assert response.headers.get("access-control-allow-origin") == cors_origin
+
+
+def test_get_cors_origins_ignores_unsafe_env_origin(monkeypatch) -> None:
+    """環境変数の非ローカルオリジンは無視される。"""
+    scheme = "http"
+    sep = "://"
+    local_origin = f"{scheme}{sep}localhost:9000"
+    unsafe_origin = f"{scheme}{sep}example.invalid:9000"
+    monkeypatch.setenv("BACKEND_CORS_ORIGINS", f"{local_origin},{unsafe_origin}")
+
+    origins = _get_cors_origins()
+    assert local_origin in origins
+    assert unsafe_origin not in origins

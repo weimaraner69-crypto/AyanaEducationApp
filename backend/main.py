@@ -3,9 +3,22 @@
 from __future__ import annotations
 
 import os
+from urllib.parse import urlparse
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+
+def _is_safe_local_origin(origin: str) -> bool:
+    """ローカル開発用として安全なオリジンか判定する。"""
+    parsed = urlparse(origin)
+    return (
+        parsed.scheme in {"http", "https"}
+        and parsed.hostname in {"localhost", "127.0.0.1"}
+        and parsed.path in {"", "/"}
+        and not parsed.query
+        and not parsed.fragment
+    )
 
 
 def _get_cors_origins() -> list[str]:
@@ -17,8 +30,11 @@ def _get_cors_origins() -> list[str]:
         "http://127.0.0.1:5173",
     ]
     env_origins = os.getenv("BACKEND_CORS_ORIGINS", "")
-    extra_origins = [origin.strip()
-                     for origin in env_origins.split(",") if origin.strip()]
+    extra_origins = [
+        origin.strip()
+        for origin in env_origins.split(",")
+        if origin.strip() and _is_safe_local_origin(origin.strip())
+    ]
 
     merged: list[str] = []
     for origin in [*default_origins, *extra_origins]:
