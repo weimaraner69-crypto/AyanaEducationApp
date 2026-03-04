@@ -56,7 +56,7 @@ bash scripts/setup_github.sh
 
 `docs/` 配下のテンプレートをプロジェクトに合わせて編集する：
 
-```
+```bash
 docs/
 ├── plan.md           # ロードマップ、Next タスク、Backlog
 ├── requirements.md   # 要件定義・受入条件
@@ -77,7 +77,7 @@ docs/
 
 ## ディレクトリ構成
 
-```
+```bash
 .
 ├── project-config.yml              # プロジェクト設定（ブートストラップ用）
 │
@@ -139,7 +139,7 @@ docs/
 
 ## エージェント構成
 
-```
+```txt
 ユーザー
   │
   ▼
