@@ -49,14 +49,15 @@ const App = () => {
   const [userAnswer, setUserAnswer] = useState('');
   const [isAutoCollecting, setIsAutoCollecting] = useState(false);
   const [collectStep, setCollectStep] = useState(0);
-  const TODAY = useMemo(() => new Date('2026-03-02'), []);
+  const TODAY = useMemo(() => new Date(), []);
 
   const profiles = useMemo(() => {
-    const sonInfo = calculateStudentInfo('2014-04-09', TODAY);
-    const daughterInfo = calculateStudentInfo('2012-05-29', TODAY);
+    // ダミーデータ：個人情報保護のため実名・実生年月日は使用しない
+    const sonInfo = calculateStudentInfo('2010-05-15', TODAY);
+    const daughterInfo = calculateStudentInfo('2011-08-20', TODAY);
     return [
-      { id: 'son_masamune', name: '政宗', stage: sonInfo.stage, color: 'amber', icon: Pencil, age: sonInfo.age, gradeLabel: sonInfo.gradeLabel, isAdult: sonInfo.isAdult },
-      { id: 'daughter_ayana', name: '文菜', stage: daughterInfo.stage, color: 'indigo', icon: BookOpen, age: daughterInfo.age, gradeLabel: daughterInfo.gradeLabel, isAdult: daughterInfo.isAdult }
+      { id: 'user_a', name: 'ユーザーA', stage: sonInfo.stage, color: 'amber', icon: Pencil, age: sonInfo.age, gradeLabel: sonInfo.gradeLabel, isAdult: sonInfo.isAdult },
+      { id: 'user_b', name: 'ユーザーB', stage: daughterInfo.stage, color: 'indigo', icon: BookOpen, age: daughterInfo.age, gradeLabel: daughterInfo.gradeLabel, isAdult: daughterInfo.isAdult }
     ];
   }, [TODAY]);
 
@@ -141,8 +142,9 @@ const App = () => {
   // 真偽検証システム（Evidence Viewer）
   const EvidenceViewer = ({ isOpen, onClose, unitName, sourceUrl }) => {
     if (!isOpen) return null;
-    const sourceHash = "SHA-256: 3f7a8e9c2b1d4f6a..."; // デジタルフィンガープリント
-    const extractedText = "学習指導要領に基づく第4学年の算数において、整数と整数の乗法の基本を習得する必要があります。該当の学習目標は「かけ算の初歩的な理解と定着」です。";
+    // TODO(Phase 2): バックエンド実装時に、実際の PDF から自動計算した SHA-256 を使用する
+    const sourceHash = "SHA-256: a3f8b9e2c1d4f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0";
+    const extractedText = "学習指導要領に基づく教科の学習目標と単元内容。[実装は Phase 2 で実データを使用]"; // TODO(Phase 2): 実際の PDF テキストを抽出
     return (
       <ModalBase
         title="証拠を確認"
@@ -259,7 +261,7 @@ const App = () => {
                     { t: "文科省Webサイトへリクエスト送信", u: "mext.go.jp/a_menu/..." },
                     { t: "最新のPDF配布パスを自動特定", u: "mext.go.jp/content/2022..." },
                     { t: "URLの実在性を確認 (HTTP 200 OK)", u: "Status: LIVE" },
-                    { t: "政宗・文菜の学年への適合性を検証", u: "Grade: VALID" },
+                    { t: "学年への適合性を検証", u: "Grade: VALID" },
                     { t: "AIナレッジベースへ同期完了", u: "Sync: COMPLETED" }
                   ].map((step, i) => (
                     <div key={i} className={`flex flex-col gap-0.5 transition-all duration-500 ${collectStep >= i ? 'opacity-100 translate-x-1' : 'opacity-20'}`}>
@@ -349,7 +351,7 @@ const App = () => {
         </div>
         <h2 className="text-3xl font-black mb-10 tracking-tight italic uppercase">MEXT Grounding...</h2>
         <div className="space-y-4 w-full max-w-xs mx-auto">
-          {["文科省公開の最新URLへの疎通確認", "PDF内部の学習目標と教科名を同期", "政宗・文菜さんの学年適性を最終検証", "問題構築の完了"].map((text, i) => (
+          {["文科省公開の最新URLへの疎通確認", "PDF内部の学習目標と教科名を同期", "学年適性を最終検証", "問題構築の完了"].map((text, i) => (
             <div key={i} className={`flex items-center gap-3 transition-opacity duration-500 ${analysisStep >= i ? 'opacity-100 translate-x-1' : 'opacity-20'}`}>
               <CheckCircle2 size={16} />
               <p className="text-xs font-bold text-left">{text}</p>

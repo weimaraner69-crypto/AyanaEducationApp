@@ -72,6 +72,22 @@ Copilot エージェントの場合は `get_errors` ツール（filePaths 省略
 {{RUN_PREFIX}} {{TEST_RUNNER}}
 ```
 
+### MiraStudy バックエンド（N-002）
+
+```bash
+# 依存関係をインストール
+pip install -r requirements.txt
+
+# FastAPI サーバーを起動（開発モード）
+.venv/bin/python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+
+# ヘルスチェック
+curl -s http://127.0.0.1:8000/api/health
+# 期待値: {"status":"ok"}
+```
+
+`BACKEND_CORS_ORIGINS` を設定すると、追加の CORS 許可オリジンをカンマ区切りで指定できる。
+
 ### ポリシーチェック
 
 ```bash
