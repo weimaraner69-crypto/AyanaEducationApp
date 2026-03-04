@@ -17,13 +17,13 @@
 
 ## ロードマップ（概略）
 
-| Phase | 名称            | 目標                                       | 期間目安  |
-| ----- | --------------- | ------------------------------------------ | --------- |
-| 0     | Foundation      | React + FastAPI基盤構築、提供コード配置     | 1週間     |
-| 1     | Frontend MVP    | フロントエンド完成、コンポーネント分割      | 2週間     |
-| 2     | Backend API     | MEXT PDF連携、問題生成API実装              | 2週間     |
-| 3     | Deploy          | Vercelデプロイ、CI/CD整備                  | 1週間     |
-| 4     | Polish          | パフォーマンス最適化、追加機能             | 継続      |
+| Phase | 名称 | 目標 | 期間目安 |
+|---|---|---|---|
+| 0 | Foundation | React + FastAPI基盤構築、提供コード配置 | 1週間 |
+| 1 | Frontend MVP | フロントエンド完成、コンポーネント分割 | 2週間 |
+| 2 | Backend API | MEXT PDF連携、問題生成API実装 | 2週間 |
+| 3 | Deploy | Vercelデプロイ、CI/CD整備 | 1週間 |
+| 4 | Polish | パフォーマンス最適化、追加機能 | 継続 |
 
 ※ 期間目安は目標であり、検証結果に基づき随時見直す。
 
@@ -106,13 +106,13 @@
 
 ## GitHub Issue / Project 対応表
 
-| 計画                                       | Issue | Phase | 種別        |
-| ------------------------------------------ | ----- | ----- | ----------- |
-| N-001 Create React App + 提供コード配置   | #1    | 0     | enhancement |
-| N-002 Python FastAPI基盤セットアップ       | #2    | 0     | enhancement |
-| N-003 フロントエンド・バックエンド疎通確認 | #3    | 0     | enhancement |
+| 計画 | Issue | Phase | 種別 |
+|---|---|---|---|
+| N-001 Create React App + 提供コード配置 | #1 | 0 | enhancement |
+| N-002 Python FastAPI基盤セットアップ | #2 | 0 | enhancement |
+| N-003 フロントエンド・バックエンド疎通確認 | #3 | 0 | enhancement |
 
-GitHub Project: https://github.com/users/weimaraner69-crypto/projects （作成予定）
+GitHub Project: [Project Link](https://github.com/users/weimaraner69-crypto/projects/1) （作成予定）
 
 ## 直近の変更履歴（最大10件）
 
