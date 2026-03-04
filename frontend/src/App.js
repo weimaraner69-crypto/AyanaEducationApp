@@ -39,13 +39,7 @@ const App = () => {
   const [mode, setMode] = useState('normal');
   const [inputData, setInputData] = useState({ unit: '', image: null });
   const [analysisStep, setAnalysisStep] = useState(0);
-  const [showGuidelineDetail, setShowGuidelineDetail] = useState(false);
-  const [showHintModal, setShowHintModal] = useState(false);
-  const [showAccountSettings, setShowAccountSettings] = useState(false);
-  const [showHowToUse, setShowHowToUse] = useState(false);
-  const [showSystemSpecs, setShowSystemSpecs] = useState(false);
   const [showEvidenceViewer, setShowEvidenceViewer] = useState(false);
-  const [feedback, setFeedback] = useState(null);
   const [userAnswer, setUserAnswer] = useState('');
   const [isAutoCollecting, setIsAutoCollecting] = useState(false);
   const [collectStep, setCollectStep] = useState(0);
@@ -145,7 +139,7 @@ const App = () => {
     return () => controller.abort();
   }, [screen, apiBaseUrl]);
 
-  const resetToHome = () => { setScreen('home'); setSubject(null); setFeedback(null); setUserAnswer(''); };
+  const resetToHome = () => { setScreen('home'); setSubject(null); setUserAnswer(''); };
 
   const ModalBase = ({ title, subTitle, icon: Icon, color, children, onClose }) => (
     <div className="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 text-left">
@@ -422,7 +416,11 @@ const App = () => {
               <ShieldCheck size={16} />
               証拠を表示（MEXT PDF確認）
             </button>
-            <button onClick={() => setFeedback({ type: userAnswer.trim().toLowerCase() === (academicStage === 'es' ? '480' : 'am') ? 'success' : 'error' })} className={`w-full py-6 bg-indigo-600 text-white font-black text-xl rounded-[2.5rem] shadow-2xl active:scale-95 transition-all font-black shadow-indigo-100`}>答え合わせ</button>
+            <button onClick={() => {
+              const isCorrect = userAnswer.trim().toLowerCase() === (academicStage === 'es' ? '480' : 'am');
+              // フィードバック処理は将来実装予定
+              console.log(isCorrect ? '正解' : '不正解');
+            }} className={`w-full py-6 bg-indigo-600 text-white font-black text-xl rounded-[2.5rem] shadow-2xl active:scale-95 transition-all font-black shadow-indigo-100`}>答え合わせ</button>
           </div>
         </div>
         <EvidenceViewer
