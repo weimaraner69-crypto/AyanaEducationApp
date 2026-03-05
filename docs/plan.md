@@ -11,9 +11,9 @@
 - フェーズ：**Phase 1 - Frontend MVP 実施中**
 - ブロッカー：なし
 - 直近の重要決定：
-  - Phase 0（React + FastAPI 基盤構築）完了 ✅ → Phase 1 開始
-  - N-004（App コンポーネント分割）完了、マージ（PR #9, 2026-03-05）✅
-  - 独立監査: Must 0件、Should 6件（全修正済）
+  - Phase 1: N-004（コンポーネント分割）完了 ✅、N-005（React Router 導入）完了 ✅
+  - N-005: Must 3件検出（ログアウトガード、テストロジック、日付依存）→ 全修正完了
+  - Next が空のため、次のタスク選定が必要
 
 ## ロードマップ（概略）
 
@@ -35,19 +35,17 @@
 
 ## Next（自動実行対象：最大3件）
 
-### N-005 React Router の導入とルーティング設定
-
-- 目的：単一サービスの複数画面間のルーティングを React Router で管理し、SPA の UX を向上する
-- 受入条件：
-  - react-router-dom v6 が package.json に追加されている
-  - <BrowserRouter>, <Routes>, <Route> を使用した基本ルーティングが実装されている
-  - /login, /home, /unit-input, /quiz のルート定義が存在する
-  - ルーティング画面遷移テストが追加されている
-  - ブラウザバックボタンで前画面に戻る
-- 依存：N-004（完了済み）
-- 触る領域：frontend/src/, frontend/src/App.js
+（現在空）
 
 ## Done（完了）
+
+### ✅ N-005 React Router の導入とルーティング設定
+
+- PR: #10 (2026-03-05 マージ)
+- 成果物: react-router-dom v6 導入、BrowserRouter/Routes/Route 実装、4ルート定義 (/login, /home, /unit-input, /quiz)
+- 検証: Jest 67/67 PASS (+8 新規ルーティングテスト), ESLint 0 errors, npm build SUCCESS, pytest 13/13 PASS, policy_check OK
+- 監査: 3監査（spec/security/reliability）で Must 3件（全対応済み）、Should 1件
+- 成果: App.js 25%削減、SPA ルーティング完全対応
 
 ### ✅ N-004 App コンポーネントの分割
 
@@ -116,7 +114,7 @@
 | N-002 Python FastAPI基盤セットアップ | #2 | 0 | enhancement | ✅ CLOSED |
 | N-003 フロントエンド・バックエンド疎通確認 | #3 | 0 | enhancement | ✅ CLOSED |
 | N-004 App コンポーネントの分割 | #8 | 1 | enhancement | ✅ CLOSED |
-| N-005 React Router の導入とルーティング設定 | #11 | 1 | enhancement | 🔵 OPEN |
+| N-005 React Router の導入とルーティング設定 | #11 | 1 | enhancement | ✅ CLOSED |
 
 GitHub Project: [Project Link](https://github.com/users/weimaraner69-crypto/projects/1) （作成予定）
 
