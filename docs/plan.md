@@ -8,12 +8,12 @@
 
 ## 現状（Status）
 
-- フェーズ：**Phase 1 - Frontend MVP 実施中**
+- フェーズ：**Phase 1 - Frontend MVP 仕上げ段階**
 - ブロッカー：なし
 - 直近の重要決定：
-  - Phase 1: N-004（コンポーネント分割）完了 ✅、N-005（React Router 導入）完了 ✅
-  - N-005: Must 3件検出（ログアウトガード、テストロジック、日付依存）→ 全修正完了
-  - Next が空のため、次のタスク選定が必要
+  - Phase 1: N-004, N-005 完了 ✅
+  - Phase 1 残タスク3件を Next に昇格（N-006, N-007, N-008）
+  - 優先度: テスト品質向上 → レスポンシブ対応 → 統合テスト
 
 ## ロードマップ（概略）
 
@@ -35,7 +35,43 @@
 
 ## Next（自動実行対象：最大3件）
 
-（現在空）
+### N-006 学年計算ロジックの単体テスト追加
+
+- 目的：`utils/gradeCalculator.js` の `calculateStudentInfo` 関数に対する単体テストを追加し、境界値・エッジケースを網羅する
+- 受入条件：
+  - `gradeCalculator.test.js` が `frontend/src/utils/` 配下に作成されている
+  - 境界値テスト（4月1日生まれ、3月31日生まれ、学年境界）を含む
+  - 年齢計算の正確性を検証するテストが存在する
+  - 小学校・中学校・高校・未就学・卒業生の判定ロジックをカバーする
+  - 20歳での権限移譲フラグ（isAdult）のテストが存在する
+  - ESLint エラーなし
+- 依存：N-004（完了済み）
+- 触る領域：frontend/src/utils/gradeCalculator.test.js
+
+### N-007 レスポンシブデザインの検証とモバイル対応
+
+- 目的：スマートフォン・タブレットでの表示を最適化し、Tailwind CSS のレスポンシブクラスを活用する
+- 受入条件：
+  - スマートフォン（375px幅）で全画面が正常に表示される
+  - タブレット（768px幅）で全画面が正常に表示される
+  - デスクトップ（1024px幅以上）で全画面が正常に表示される
+  - テキストが読みやすいサイズで表示される（最小14px）
+  - タップ領域が十分なサイズ（最小44x44px）
+  - レスポンシブ対応の視覚的検証結果を PR に添付
+- 依存：N-005（完了済み）
+- 触る領域：frontend/src/components/
+
+### N-008 フロントエンドの統合テスト（React Testing Library）
+
+- 目的：ユーザーフロー全体をカバーする統合テストを追加し、エンドツーエンドの動作を保証する
+- 受入条件：
+  - ログイン → ホーム → 教科選択 → 単元入力 → クイズ表示の一連のフローをテストする
+  - 保護者モード切り替えのテストが存在する
+  - エラー処理（API失敗時）のテストが存在する
+  - 統合テストが `frontend/src/integration/` または `frontend/src/__tests__/` 配下に作成されている
+  - ESLint エラーなし、全テスト PASS
+- 依存：N-005（完了済み）
+- 触る領域：frontend/src/__tests__/ または frontend/src/integration/
 
 ## Done（完了）
 
@@ -76,12 +112,6 @@
 
 ## Backlog（保留）
 
-### Phase 1: Frontend MVP
-
-- B-003 学年計算ロジックの単体テスト追加
-- B-004 レスポンシブデザインの検証とモバイル対応
-- B-005 フロントエンドの統合テスト（React Testing Library）
-
 ### Phase 2: Backend API
 
 - B-006 MEXT PDF自動取得エンドポイント（GET /api/mext/fetch）
@@ -115,6 +145,9 @@
 | N-003 フロントエンド・バックエンド疎通確認 | #3 | 0 | enhancement | ✅ CLOSED |
 | N-004 App コンポーネントの分割 | #8 | 1 | enhancement | ✅ CLOSED |
 | N-005 React Router の導入とルーティング設定 | #11 | 1 | enhancement | ✅ CLOSED |
+| N-006 学年計算ロジックの単体テスト追加 | #12 | 1 | enhancement | 🔵 OPEN |
+| N-007 レスポンシブデザインの検証とモバイル対応 | #13 | 1 | enhancement | 🔵 OPEN |
+| N-008 フロントエンドの統合テスト | #14 | 1 | enhancement | 🔵 OPEN |
 
 GitHub Project: [Project Link](https://github.com/users/weimaraner69-crypto/projects/1) （作成予定）
 
