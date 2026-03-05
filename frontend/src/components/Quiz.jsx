@@ -15,7 +15,7 @@ const ModalBase = ({ title, subTitle, icon: Icon, color, children, onClose }) =>
             <p className={`text-[10px] font-black uppercase tracking-widest ${color === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{subTitle}</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full transition-colors text-slate-300"><X size={32} /></button>
+        <button onClick={onClose} aria-label="閉じる" className="p-2 hover:bg-black/5 rounded-full transition-colors text-slate-300"><X size={32} /></button>
       </div>
       <div className="p-6 sm:p-10 overflow-y-auto max-h-[75vh] space-y-6 text-left">{children}</div>
     </div>

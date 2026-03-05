@@ -99,9 +99,8 @@ describe('Home コンポーネント', () => {
   test('インタラクション: ログアウトボタンクリックで onLogout が呼ばれる', () => {
     healthCheck.mockReturnValue(new Promise(() => { }));
     const handleLogout = jest.fn();
-    const { container } = render(<Home {...baseProps} onLogout={handleLogout} />);
-    // ログアウトボタンは text-rose-500 クラスを持つ唯一のボタン
-    const logoutBtn = container.querySelector('button.text-rose-500');
+    render(<Home {...baseProps} onLogout={handleLogout} />);
+    const logoutBtn = screen.getByRole('button', { name: 'ログアウト' });
     fireEvent.click(logoutBtn);
     expect(handleLogout).toHaveBeenCalledTimes(1);
   });
