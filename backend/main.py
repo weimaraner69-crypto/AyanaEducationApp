@@ -5,10 +5,11 @@ from __future__ import annotations
 import os
 import re as _re
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.services.mext_fetcher import fetch_latest_mext_pdf_urls
+from backend.services.question_generator import generate_question, QuestionGenerationError
 
 # CORS オリジンの検証パターン（http(s)://で始まり、ワイルドカードを含まない）
 _ORIGIN_RE = _re.compile(r"^https?://[^*]+$")
@@ -51,9 +52,25 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_get_cors_origins(),
     allow_credentials=True,
-    allow_methods=["GET"],  # N-003 段階では GET のみ許可
-    allow_headers=["Content-Type"],  # 必要最小限のヘッダのみ許可
+    allow_methods=["GET", "POST"],  # B-008: POSTも許可
+    allow_headers=["Content-Type"],
 )
+
+# B-008: 問題生成エンドポイント
+@app.post("/api/question/generate")
+async def question_generate(request: Request) -> dict[str, object]:
+    """
+    PDF解析結果（テキスト・表データ等）を受け取り、問題文・選択肢・正答を返す。
+    失敗時は理由コード付きでfail-close。
+    """
+    try:
+        body = await request.json()
+        result = generate_question(body)
+        return {"status": "ok", "data": result}
+    except QuestionGenerationError as qe:
+        return {"status": "fail", "reason_code": qe.reason_code, "message": str(qe)}
+    except Exception as exc:
+        return {"status": "error", "reason_code": "UNEXPECTED_ERROR", "message": f"予期しないエラー: {exc}"}
 
 
 @app.get("/api/health")
