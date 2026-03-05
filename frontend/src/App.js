@@ -29,7 +29,14 @@ const App = () => {
     { id: 3, name: "中学校学習指導要領解説_数学編.pdf", pushedBy: "MEXT Auto", active: true, stage: 'jhs', url: "https://www.mext.go.jp/content/20210317-mxt_kyoiku01-100002608_005.pdf" }
   ]);
 
-  const TODAY = useMemo(() => new Date(), []);
+  // テスト再現性確保のため、固定日付を使用（本番: new Date()）
+  const TODAY = useMemo(() => {
+    // テスト環境では 2025-01-15 固定、本番は現在日時
+    if (process.env.NODE_ENV === 'test') {
+      return new Date('2025-01-15');
+    }
+    return new Date();
+  }, []);
 
   const profiles = useMemo(() => {
     // ダミーデータ：個人情報保護のため実名・実生年月日は使用しない
@@ -83,6 +90,7 @@ const App = () => {
   /** ログアウト処理 */
   const handleLogout = useCallback(() => {
     setCurrentUser(null);
+    setUserRole('student');
     setSubject(null);
     navigate('/login');
   }, [navigate]);

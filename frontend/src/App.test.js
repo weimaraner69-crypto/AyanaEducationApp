@@ -131,8 +131,9 @@ describe('ルーティング画面遷移', () => {
     await waitFor(() => {
       expect(screen.getByTestId('api-health-message')).toBeInTheDocument();
     });
-    // 教科選択（数学 or 算数）
-    const mathButton = screen.getByText('数学') || screen.getByText('算数');
+    // 教科選択（数学 or 算数 — メモ化計算結果に依存するため queryByText で防御的に扱う）
+    const mathButton =
+      screen.queryByText('数学') ?? screen.getByText('算数');
     fireEvent.click(mathButton);
     // 単元入力画面の要素が表示される
     await waitFor(() => {
