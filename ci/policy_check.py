@@ -27,6 +27,7 @@ SCAN_DIRS = [
     REPO_ROOT / ".github",
     REPO_ROOT / "configs",
     REPO_ROOT / "ci",
+    REPO_ROOT / "frontend" / "src",
 ]
 
 # スキャン対象の拡張子
@@ -91,6 +92,8 @@ URL_ALLOWLIST_PATTERNS: list[str] = [
     r"astral\.sh",
     r"opentelemetry\.io",
     r"localhost",  # テストで使用するローカルホスト
+    r"127\.0\.0\.1",  # テスト時のローカルバックエンド
+    r"mext\.go\.jp",  # 文部科学省公式ドメイン（教科書・指導要領等）
 ]
 
 # 禁止操作パターン（言語非依存、全ファイルに適用）
@@ -209,7 +212,8 @@ def main() -> int:
     issues: list[str] = []
 
     # .env が git 管理されていないことを確認
-    tracked_files = {p.relative_to(REPO_ROOT).as_posix() for p in git_ls_files()}
+    tracked_files = {p.relative_to(REPO_ROOT).as_posix()
+                     for p in git_ls_files()}
     if ".env" in tracked_files:
         issues.append(
             "禁止: .env がリポジトリにコミットされています。削除し、gitignore 対象にしてください。"
