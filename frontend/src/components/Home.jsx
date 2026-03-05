@@ -87,7 +87,7 @@ const Home = ({
             <p className="text-sm font-black leading-none">{userRole === 'parent' ? 'お父様' : `${currentUser?.name} さん`}</p>
           </div>
         </div>
-        <button onClick={onLogout} className="p-3 bg-white border border-slate-200 rounded-xl text-rose-500 hover:bg-rose-50 shadow-sm transition-all">
+        <button onClick={onLogout} aria-label="ログアウト" className="p-3 bg-white border border-slate-200 rounded-xl text-rose-500 hover:bg-rose-50 shadow-sm transition-all">
           <LogOut size={18} />
         </button>
       </div>

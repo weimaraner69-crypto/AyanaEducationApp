@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
   BookOpen,
   Calculator, FlaskConical, Globe, Hammer, HeartPulse,
@@ -11,7 +12,9 @@ import UnitInput from './components/UnitInput';
 import Quiz from './components/Quiz';
 
 const App = () => {
-  const [screen, setScreen] = useState('login');
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState('student');
   const [academicStage, setAcademicStage] = useState('jhs');
@@ -19,6 +22,7 @@ const App = () => {
   const [mode, setMode] = useState('normal');
   const [inputData, setInputData] = useState({ unit: '', image: null });
   const [analysisStep, setAnalysisStep] = useState(0);
+  const [screen, setScreen] = useState('quiz');
   const [masterSources, setMasterSources] = useState([
     { id: 1, name: "小学校学習指導要領解説_算数編.pdf", pushedBy: "MEXT Auto", active: true, stage: 'es', url: "https://www.mext.go.jp/content/20220608-mxt_kyoiku01-100002607_04.pdf" },
     { id: 2, name: "中学校学習指導要領解説_外国語編.pdf", pushedBy: "MEXT Auto", active: true, stage: 'jhs', url: "https://www.mext.go.jp/content/20210317-mxt_kyoiku01-100002608_010.pdf" },
@@ -63,35 +67,49 @@ const App = () => {
   }, [academicStage]);
 
   /** プロファイル選択後のログイン処理 */
-  const handleLogin = (profile) => {
+  const handleLogin = useCallback((profile) => {
     setCurrentUser(profile);
     setAcademicStage(profile.stage);
     setUserRole('student');
-    setScreen('home');
-  };
+    navigate('/home');
+  }, [navigate]);
+
+  /** 保護者ログイン処理 */
+  const handleParentLogin = useCallback(() => {
+    setUserRole('parent');
+    navigate('/home');
+  }, [navigate]);
 
   /** ログアウト処理 */
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setCurrentUser(null);
-    setScreen('login');
     setSubject(null);
-  };
+    navigate('/login');
+  }, [navigate]);
+
+  /** 教科選択後に単元入力画面へ遷移 */
+  const handleSelectSubject = useCallback((key) => {
+    setSubject(key);
+    navigate('/unit-input');
+  }, [navigate]);
 
   /** AI 解析開始 */
-  const handleGenerate = () => {
+  const handleGenerate = useCallback(() => {
     setScreen('analyzing');
     setAnalysisStep(0);
-  };
+    navigate('/quiz');
+  }, [navigate]);
 
   /** ホーム画面へ戻る */
-  const resetToHome = () => {
-    setScreen('home');
+  const resetToHome = useCallback(() => {
     setSubject(null);
-  };
+    setScreen('quiz');
+    navigate('/home');
+  }, [navigate]);
 
   // 解析中アニメーションが完了したらクイズ画面へ遷移する
   useEffect(() => {
-    if (screen === 'analyzing') {
+    if (screen === 'analyzing' && location.pathname === '/quiz') {
       const interval = setInterval(() => {
         setAnalysisStep(prev => {
           if (prev >= 3) { clearInterval(interval); setTimeout(() => setScreen('quiz'), 800); return prev; }
@@ -100,65 +118,81 @@ const App = () => {
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [screen]);
+  }, [screen, location.pathname]);
 
-  if (screen === 'login') {
-    return (
-      <Login
-        profiles={profiles}
-        onLogin={handleLogin}
-        onParentLogin={() => { setUserRole('parent'); setScreen('home'); }}
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={
+          <Login
+            profiles={profiles}
+            onLogin={handleLogin}
+            onParentLogin={handleParentLogin}
+          />
+        }
       />
-    );
-  }
-
-  if (screen === 'home') {
-    return (
-      <Home
-        currentUser={currentUser}
-        userRole={userRole}
-        academicStage={academicStage}
-        mode={mode}
-        onModeChange={setMode}
-        subjectsConfig={subjectsConfig}
-        onSelectSubject={(key) => { setSubject(key); setScreen('input'); }}
-        onLogout={handleLogout}
-        masterSources={masterSources}
-        setMasterSources={setMasterSources}
+      <Route
+        path="/home"
+        element={
+          currentUser || userRole === 'parent' ? (
+            <Home
+              currentUser={currentUser}
+              userRole={userRole}
+              academicStage={academicStage}
+              mode={mode}
+              onModeChange={setMode}
+              subjectsConfig={subjectsConfig}
+              onSelectSubject={handleSelectSubject}
+              onLogout={handleLogout}
+              masterSources={masterSources}
+              setMasterSources={setMasterSources}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
-    );
-  }
-
-  if (screen === 'input') {
-    return (
-      <UnitInput
-        subject={subject}
-        subjectsConfig={subjectsConfig}
-        mode={mode}
-        academicStage={academicStage}
-        inputData={inputData}
-        setInputData={setInputData}
-        onGenerate={handleGenerate}
-        onBack={resetToHome}
+      <Route
+        path="/unit-input"
+        element={
+          currentUser ? (
+            <UnitInput
+              subject={subject}
+              subjectsConfig={subjectsConfig}
+              mode={mode}
+              academicStage={academicStage}
+              inputData={inputData}
+              setInputData={setInputData}
+              onGenerate={handleGenerate}
+              onBack={resetToHome}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
-    );
-  }
-
-  if (screen === 'analyzing' || screen === 'quiz') {
-    return (
-      <Quiz
-        inputData={inputData}
-        academicStage={academicStage}
-        mode={mode}
-        sourceUrl={masterSources[0]?.url}
-        onBack={resetToHome}
-        analysisStep={analysisStep}
-        screen={screen}
+      <Route
+        path="/quiz"
+        element={
+          currentUser ? (
+            <Quiz
+              inputData={inputData}
+              academicStage={academicStage}
+              mode={mode}
+              sourceUrl={masterSources[0]?.url}
+              onBack={resetToHome}
+              analysisStep={analysisStep}
+              screen={screen}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
-    );
-  }
-
-  return null;
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
 };
 
 export default App;
