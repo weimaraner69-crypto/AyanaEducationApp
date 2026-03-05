@@ -35,7 +35,18 @@
 
 ## Next（自動実行対象：最大3件）
 
-（空 — Phase 1 タスクを昇格予定）
+### N-004 App コンポーネントの分割
+
+- 目的：モノリシックな App.js を機能別コンポーネントに分割し、保守性とテスト容易性を向上する
+- 受入条件：
+  - Login.jsx, Home.jsx, SubjectSelector.jsx, UnitInput.jsx, Quiz.jsx が components/ 配下に作成されている
+  - App.js は各コンポーネントを import して組み立てるのみ（ロジックは各コンポーネントに委譲）
+  - 既存の動作が維持される（npm start で正常動作、画面遷移が同じ）
+  - 各コンポーネントに対応するテストファイル（*.test.jsx）が存在する
+  - ESLint エラーがない
+  - services/api.js を作成し、API 呼び出しをそこに集約する（architecture.md の制約に準拠）
+- 依存：N-001, N-002, N-003（全て完了済み）
+- 触る領域：frontend/src/components/, frontend/src/App.js, frontend/src/services/
 
 ## Done（完了）
 
@@ -62,7 +73,6 @@
 
 ### Phase 1: Frontend MVP
 
-- B-001 Appコンポーネントの分割（Login, Home, SubjectSelector, UnitInput, Quiz）
 - B-002 React Routerの導入とルーティング設定
 - B-003 学年計算ロジックの単体テスト追加
 - B-004 レスポンシブデザインの検証とモバイル対応
@@ -99,11 +109,13 @@
 | N-001 Create React App + 提供コード配置 | #1 | 0 | enhancement | ✅ CLOSED |
 | N-002 Python FastAPI基盤セットアップ | #2 | 0 | enhancement | ✅ CLOSED |
 | N-003 フロントエンド・バックエンド疎通確認 | #3 | 0 | enhancement | ✅ CLOSED |
+| N-004 App コンポーネントの分割 | #8 | 1 | enhancement | 🔵 OPEN |
 
 GitHub Project: [Project Link](https://github.com/users/weimaraner69-crypto/projects/1) （作成予定）
 
 ## 直近の変更履歴（最大10件）
 
+- 2026-03-05: Phase 1 開始 — B-001 を N-004（コンポーネント分割）として Next に昇格
 - 2026-03-05: **Phase 0 完了** — N-001/N-002/N-003 すべてマージ、Issue #1/#2/#3 自動 Close
 - 2026-03-05: N-003 で独立監査を実施（Must 0件、Should 7件全対応）
 - 2026-03-04: N-002（FastAPI 基盤）完了、CORS 設定・pytest 実装
