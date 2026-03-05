@@ -11,9 +11,9 @@
 - フェーズ：**Phase 1 - Frontend MVP 仕上げ段階**
 - ブロッカー：なし
 - 直近の重要決定：
-  - Phase 1: N-004, N-005, N-006 完了 ✅
-  - 次は N-007（レスポンシブ対応）を実行
-  - 優先度: テスト品質向上 ✅ → レスポンシブ対応 → 統合テスト
+  - Phase 1: N-004, N-005, N-006, N-007 完了 ✅
+  - 次は N-008（統合テスト）を実行
+  - 優先度: テスト品質向上 ✅ → レスポンシブ対応 ✅ → 統合テスト
 
 ## ロードマップ（概略）
 
@@ -35,18 +35,6 @@
 
 ## Next（自動実行対象：最大3件）
 
-### N-007 レスポンシブデザインの検証とモバイル対応
-
-- 目的：スマートフォン・タブレットでの表示を最適化し、Tailwind CSS のレスポンシブクラスを活用する
-- 受入条件：
-  - スマートフォン（375px幅）で全画面が正常に表示される
-  - タブレット（768px幅）で全画面が正常に表示される
-  - デスクトップ（1024px幅以上）で全画面が正常に表示される
-  - テキストが読みやすいサイズで表示される（最小14px）
-  - タップ領域が十分なサイズ（最小44x44px）
-  - レスポンシブ対応の視覚的検証結果を PR に添付
-- 依存：N-005（完了済み）
-- 触る領域：frontend/src/components/
 
 ### N-008 フロントエンドの統合テスト（React Testing Library）
 
@@ -61,6 +49,14 @@
 - 触る領域：frontend/src/__tests__/ または frontend/src/integration/
 
 ## Done（完了）
+
+### ✅ N-007 レスポンシブデザインの検証とモバイル対応
+
+- PR: #16 (2026-03-05 マージ)
+- 成果物: Tailwind CSS レスポンシブクラス（sm:/md:/lg: ブレークポイント）、requirements.md NFR-060 追加、24 テスト作成
+- 検証: Jest 122/122 PASS (+24 新規テスト), ESLint 0 errors, pytest 13/13 PASS, policy_check OK
+- 監査: 3監査（spec/security/reliability）で Must 0件、Should 6件（非ブロッカー）
+- 成果: AC-090〜AC-095 全充足、Tailwind レスポンシブ対応完成
 
 ### ✅ N-006 学年計算ロジックの単体テスト追加
 
@@ -141,13 +137,14 @@
 | N-004 App コンポーネントの分割 | #8 | 1 | enhancement | ✅ CLOSED |
 | N-005 React Router の導入とルーティング設定 | #11 | 1 | enhancement | ✅ CLOSED |
 | N-006 学年計算ロジックの単体テスト追加 | #12 | 1 | enhancement | ✅ CLOSED |
-| N-007 レスポンシブデザインの検証とモバイル対応 | #13 | 1 | enhancement | 🔵 OPEN |
+| N-007 レスポンシブデザインの検証とモバイル寯応 | #13 | 1 | enhancement | ✅ CLOSED |
 | N-008 フロントエンドの統合テスト | #14 | 1 | enhancement | 🔵 OPEN |
 
 GitHub Project: [Project Link](https://github.com/users/weimaraner69-crypto/projects/1) （作成予定）
 
 ## 直近の変更履歴（最大10件）
 
+- 2026-03-05: **N-007 完了** — Tailwind レスポンシブクラス (122テスト) マージ、Issue #13 自動 Close、Must 2件修正済みで監査通過
 - 2026-03-05: **N-006 完了** — gradeCalculator.test.js (31テスト) マージ、Issue #12 自動 Close、Must 0 件で監査通過
 - 2026-03-05: Phase 1 開始 — B-001 を N-004（コンポーネント分割）として Next に昇格
 - 2026-03-05: **Phase 0 完了** — N-001/N-002/N-003 すべてマージ、Issue #1/#2/#3 自動 Close
