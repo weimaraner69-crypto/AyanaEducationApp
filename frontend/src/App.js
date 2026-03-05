@@ -119,19 +119,45 @@ const App = () => {
     if (screen !== 'home') return undefined;
 
     const controller = new AbortController();
+    const HEALTH_TIMEOUT_MS = 5000;
+
     const fetchHealth = async () => {
       setApiHealth({ state: 'loading', message: '接続確認中...' });
+
+      // タイムアウトを設定する
+      const timer = setTimeout(() => controller.abort(), HEALTH_TIMEOUT_MS);
+
       try {
         const response = await fetch(`${apiBaseUrl}/api/health`, {
           method: 'GET',
           signal: controller.signal,
         });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        clearTimeout(timer);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
         const data = await response.json();
         setApiHealth({ state: 'success', message: `接続成功: ${data.status}` });
       } catch (error) {
-        if (controller.signal.aborted) return;
-        setApiHealth({ state: 'error', message: '接続失敗: バックエンドに接続できません' });
+        clearTimeout(timer);
+
+        if (controller.signal.aborted) {
+          // エラーメッセージを改善：タイムアウトかネットワーク障害か区別
+          if (error.name === 'AbortError') {
+            setApiHealth({
+              state: 'error',
+              message: `接続失敗: タイムアウト（${HEALTH_TIMEOUT_MS / 1000}秒以上応答がありません）`
+            });
+          }
+          return;
+        }
+
+        // HTTP ステータスエラーの場合は詳細を表示
+        const msg = error.message?.startsWith('HTTP ')
+          ? `接続失敗: ${error.message}`
+          : '接続失敗: バックエンドに接続できません';
+        setApiHealth({ state: 'error', message: msg });
       }
     };
 

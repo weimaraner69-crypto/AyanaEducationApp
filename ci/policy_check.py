@@ -90,6 +90,7 @@ URL_ALLOWLIST_PATTERNS: list[str] = [
     r"json-schema\.org",
     r"astral\.sh",
     r"opentelemetry\.io",
+    r"localhost",  # テストで使用するローカルホスト
 ]
 
 # 禁止操作パターン（言語非依存、全ファイルに適用）

@@ -42,3 +42,20 @@ test('shows backend error message when health API fails', async () => {
 
   fetchMock.mockRestore();
 });
+
+test('shows error message when health API returns HTTP 503', async () => {
+  const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({
+    ok: false,
+    status: 503,
+    statusText: 'Service Unavailable',
+  });
+
+  render(<App />);
+  fireEvent.click(screen.getByText(/ユーザーA/i));
+
+  await waitFor(() => {
+    expect(screen.getByTestId('api-health-message')).toHaveTextContent('接続失敗: HTTP 503');
+  });
+
+  fetchMock.mockRestore();
+});
