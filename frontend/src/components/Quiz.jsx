@@ -7,7 +7,7 @@ import { BrainCircuit, CheckCircle2, Home as HomeIcon, ShieldCheck, X } from 'lu
 const ModalBase = ({ title, subTitle, icon: Icon, color, children, onClose }) => (
   <div className="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 text-left">
     <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-      <div className={`p-8 border-b border-slate-50 flex justify-between items-center ${color === 'dark' ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`}>
+      <div className={`p-5 sm:p-8 border-b border-slate-50 flex justify-between items-center ${color === 'dark' ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`}>
         <div className="flex items-center gap-4">
           <div className={`p-3 rounded-2xl ${color === 'dark' ? 'bg-white/10' : 'bg-indigo-600 text-white shadow-lg'}`}><Icon size={24} /></div>
           <div className="text-left text-inherit">
@@ -17,7 +17,7 @@ const ModalBase = ({ title, subTitle, icon: Icon, color, children, onClose }) =>
         </div>
         <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full transition-colors text-slate-300"><X size={32} /></button>
       </div>
-      <div className="p-10 overflow-y-auto max-h-[75vh] space-y-6 text-left">{children}</div>
+      <div className="p-6 sm:p-10 overflow-y-auto max-h-[75vh] space-y-6 text-left">{children}</div>
     </div>
   </div>
 );
@@ -35,17 +35,17 @@ const EvidenceViewer = ({ isOpen, onClose, sourceUrl }) => {
     <ModalBase title="証拠を確認" subTitle="MEXT Sync Verified" icon={ShieldCheck} color="normal" onClose={onClose}>
       <div className="space-y-6">
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
-          <p className="text-xs font-black text-emerald-700 uppercase tracking-widest mb-2">✓ 文科省公式ソース確認済み</p>
+          <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-2">✓ 文科省公式ソース確認済み</p>
           <p className="text-sm text-emerald-900 break-all font-mono">{sourceUrl}</p>
         </div>
         <div>
-          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">生テキスト（PDF から自動抽出）</p>
-          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs leading-relaxed text-slate-700 font-mono">
+          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">生テキスト（PDF から自動抽出）</p>
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm leading-relaxed text-slate-700 font-mono">
             {extractedText}
           </div>
         </div>
         <div>
-          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">デジタルフィンガープリント</p>
+          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">デジタルフィンガープリント</p>
           <div className="p-4 bg-slate-900 border border-slate-700 rounded-xl text-slate-300 break-all font-mono text-[10px]">
             {sourceHash}
           </div>
@@ -66,7 +66,7 @@ const Quiz = ({ inputData, academicStage, mode, sourceUrl, onBack, analysisStep,
   // 解析中ローディング画面
   if (screen === 'analyzing') {
     return (
-      <div className={`min-h-screen ${mode === 'normal' ? (academicStage === 'es' ? 'bg-amber-500' : 'bg-indigo-600') : 'bg-rose-600'} p-8 flex flex-col items-center justify-center text-white text-center transition-colors`}>
+      <div className={`min-h-screen ${mode === 'normal' ? (academicStage === 'es' ? 'bg-amber-500' : 'bg-indigo-600') : 'bg-rose-600'} px-4 py-8 sm:p-8 flex flex-col items-center justify-center text-white text-center transition-colors`}>
         <div className="relative mb-16 text-white">
           <div className="w-32 h-32 border-8 border-white/20 border-t-white rounded-full animate-spin"></div>
           <BrainCircuit className="absolute inset-0 m-auto animate-pulse" size={48} />
@@ -76,7 +76,7 @@ const Quiz = ({ inputData, academicStage, mode, sourceUrl, onBack, analysisStep,
           {["文科省公開の最新URLへの疎通確認", "PDF内部の学習目標と教科名を同期", "学年適性を最終検証", "問題構築の完了"].map((text, i) => (
             <div key={i} className={`flex items-center gap-3 transition-opacity duration-500 ${analysisStep >= i ? 'opacity-100 translate-x-1' : 'opacity-20'}`}>
               <CheckCircle2 size={16} />
-              <p className="text-xs font-bold text-left">{text}</p>
+              <p className="text-sm font-bold text-left">{text}</p>
             </div>
           ))}
         </div>
@@ -86,7 +86,7 @@ const Quiz = ({ inputData, academicStage, mode, sourceUrl, onBack, analysisStep,
 
   // クイズ問題表示
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-6 flex flex-col items-center text-slate-900">
+    <div className="min-h-screen bg-[#F8FAFC] px-4 py-6 sm:p-6 flex flex-col items-center text-slate-900">
       <div className="w-full max-w-md flex justify-between items-center mb-6">
         <div className="flex flex-col text-left">
           <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full w-fit shadow-sm">
@@ -100,11 +100,11 @@ const Quiz = ({ inputData, academicStage, mode, sourceUrl, onBack, analysisStep,
           className="p-3 bg-white border-2 border-slate-300 rounded-2xl shadow-sm text-slate-800 flex flex-col items-center gap-1 min-w-[95px] active:scale-95"
         >
           <HomeIcon size={24} />
-          <span className="text-[11px] font-black text-inherit">ホーム</span>
+          <span className="text-sm font-black text-inherit">ホーム</span>
         </button>
       </div>
       <div className="w-full max-w-md space-y-6 text-slate-800">
-        <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border-b-8 border-slate-100 min-h-[220px] flex items-center relative overflow-hidden text-center transition-all">
+        <div className="bg-white p-6 sm:p-10 rounded-[2.5rem] shadow-sm border-b-8 border-slate-100 min-h-[220px] flex items-center relative overflow-hidden text-center transition-all">
           <div className="absolute top-0 left-0 w-2 h-full bg-indigo-500/10"></div>
           <p className="leading-relaxed font-black text-xl whitespace-pre-wrap w-full">
             {academicStage === 'es'
@@ -118,11 +118,11 @@ const Quiz = ({ inputData, academicStage, mode, sourceUrl, onBack, analysisStep,
             value={userAnswer}
             onChange={(e) => setUserAnswer(e.target.value)}
             placeholder="答えを入力してね"
-            className="w-full p-6 rounded-[2.5rem] bg-white shadow-xl border-4 border-transparent focus:border-indigo-600 outline-none text-2xl font-black text-center transition-all"
+            className="w-full p-4 sm:p-6 rounded-[2.5rem] bg-white shadow-xl border-4 border-transparent focus:border-indigo-600 outline-none text-2xl font-black text-center transition-all"
           />
           <button
             onClick={() => setShowEvidenceViewer(true)}
-            className="w-full py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 font-black text-xs rounded-2xl hover:bg-emerald-100 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 min-h-[44px] bg-emerald-50 border border-emerald-200 text-emerald-700 font-black text-sm rounded-2xl hover:bg-emerald-100 transition-all flex items-center justify-center gap-2"
           >
             <ShieldCheck size={16} />
             証拠を表示（MEXT PDF確認）
@@ -132,7 +132,7 @@ const Quiz = ({ inputData, academicStage, mode, sourceUrl, onBack, analysisStep,
               const isCorrect = userAnswer.trim().toLowerCase() === (academicStage === 'es' ? '480' : 'am');
               setShowResult(isCorrect ? 'correct' : 'incorrect');
             }}
-            className="w-full py-6 bg-indigo-600 text-white font-black text-xl rounded-[2.5rem] shadow-2xl active:scale-95 transition-all shadow-indigo-100"
+            className="w-full py-5 sm:py-6 bg-indigo-600 text-white font-black text-lg sm:text-xl rounded-[2.5rem] shadow-2xl active:scale-95 transition-all shadow-indigo-100"
             data-testid="check-answer-button"
           >
             答え合わせ
