@@ -8,12 +8,12 @@
 
 ## 現状（Status）
 
-- フェーズ：**Phase 0 - Foundation 完了** → **Phase 1 準備中**
+- フェーズ：**Phase 1 - Frontend MVP 実施中**
 - ブロッカー：なし
 - 直近の重要決定：
-  - Phase 0（React + FastAPI 基盤構築）完了 ✅
-  - 全3タスク（N-001, N-002, N-003）がマージ済み
-  - 次フェーズは Phase 1（Frontend MVP）へ移行
+  - Phase 0（React + FastAPI 基盤構築）完了 ✅ → Phase 1 開始
+  - N-004（App コンポーネント分割）完了、マージ（PR #9, 2026-03-05）✅
+  - 独立監査: Must 0件、Should 6件（全修正済）
 
 ## ロードマップ（概略）
 
@@ -35,20 +35,27 @@
 
 ## Next（自動実行対象：最大3件）
 
-### N-004 App コンポーネントの分割
+### N-005 React Router の導入とルーティング設定
 
-- 目的：モノリシックな App.js を機能別コンポーネントに分割し、保守性とテスト容易性を向上する
+- 目的：単一サービスの複数画面間のルーティングを React Router で管理し、SPA の UX を向上する
 - 受入条件：
-  - Login.jsx, Home.jsx, SubjectSelector.jsx, UnitInput.jsx, Quiz.jsx が components/ 配下に作成されている
-  - App.js は各コンポーネントを import して組み立てるのみ（ロジックは各コンポーネントに委譲）
-  - 既存の動作が維持される（npm start で正常動作、画面遷移が同じ）
-  - 各コンポーネントに対応するテストファイル（*.test.jsx）が存在する
-  - ESLint エラーがない
-  - services/api.js を作成し、API 呼び出しをそこに集約する（architecture.md の制約に準拠）
-- 依存：N-001, N-002, N-003（全て完了済み）
-- 触る領域：frontend/src/components/, frontend/src/App.js, frontend/src/services/
+  - react-router-dom v6 が package.json に追加されている
+  - <BrowserRouter>, <Routes>, <Route> を使用した基本ルーティングが実装されている
+  - /login, /home, /unit-input, /quiz のルート定義が存在する
+  - ルーティング画面遷移テストが追加されている
+  - ブラウザバックボタンで前画面に戻る
+- 依存：N-004（完了済み）
+- 触る領域：frontend/src/, frontend/src/App.js
 
 ## Done（完了）
+
+### ✅ N-004 App コンポーネントの分割
+
+- PR: #9 (2026-03-05 マージ)
+- 成果物: Login.jsx, Home.jsx, SubjectSelector.jsx, UnitInput.jsx, Quiz.jsx, services/api.js, utils/gradeCalculator.js
+- 検証: Jest 59/59 PASS, ESLint 0 errors, npm build SUCCESS, pytest 13/13 PASS, policy_check OK
+- 監査: 3監査（spec/security/reliability）で Must 0件、Should 6件全対応（コミナライト完了）
+- 成果: App.js 73%削減（400+行 → 110行）、アーキテクチャ準拠
 
 ### ✅ N-001 Create React Appセットアップ + 提供コード配置
 
@@ -73,7 +80,6 @@
 
 ### Phase 1: Frontend MVP
 
-- B-002 React Routerの導入とルーティング設定
 - B-003 学年計算ロジックの単体テスト追加
 - B-004 レスポンシブデザインの検証とモバイル対応
 - B-005 フロントエンドの統合テスト（React Testing Library）
