@@ -13,7 +13,7 @@
 - 直近の重要決定：
   - Phase 1: N-004, N-005, N-006, N-007, N-008 完了 ✅
   - N-008 は PR #17 でマージ済み、Issue #14 は自動 Close 済み
-  - 次は Phase 2（Backend API）タスクを Next に昇格予定
+  - 次は N-009（MEXT PDF自動取得エンドポイント）を実行
 
 ## ロードマップ（概略）
 
@@ -35,7 +35,18 @@
 
 ## Next（自動実行対象：最大3件）
 
-- （現在空。Phase 2 の Backlog から昇格予定）
+### N-009 MEXT PDF自動取得エンドポイント実装（GET /api/mext/fetch）
+
+- 目的：FR-004 の入口として、文科省の最新PDF取得に必要なAPI基盤を実装する
+- 受入条件：
+  - `GET /api/mext/fetch` が追加される
+  - 文科省サイトから最新PDF配布パス候補を取得できる（失敗時はフェイルクローズ）
+  - URL実在性チェック（HTTP 200）と最小限のバリデーションを実装する
+  - APIレスポンスは JSON で成功/失敗を判別可能な構造を返す
+  - 単体テストを追加し、正常系/失敗系を検証する
+  - `pytest` / `policy_check` / CI が成功する
+- 依存：N-002（FastAPI基盤）、FR-004
+- 触る領域：`backend/main.py`, `backend/services/mext_fetcher.py`, `tests/`
 
 ## Done（完了）
 
@@ -102,7 +113,6 @@
 
 ### Phase 2: Backend API
 
-- B-006 MEXT PDF自動取得エンドポイント（GET /api/mext/fetch）
 - B-007 PDF解析サービスの実装（PyPDF2 or pdfplumber）
 - B-008 問題生成エンドポイント（POST /api/question/generate）
 - B-009 フロントエンド・バックエンド統合（API呼び出しの実装）
@@ -136,11 +146,13 @@
 | N-006 学年計算ロジックの単体テスト追加 | #12 | 1 | enhancement | ✅ CLOSED |
 | N-007 レスポンシブデザインの検証とモバイル寯応 | #13 | 1 | enhancement | ✅ CLOSED |
 | N-008 フロントエンドの統合テスト | #14 | 1 | enhancement | ✅ CLOSED |
+| N-009 MEXT PDF自動取得エンドポイント実装 | #19 | 2 | enhancement | 🔵 OPEN |
 
 GitHub Project: [Project Link](https://github.com/users/weimaraner69-crypto/projects/1) （作成予定）
 
 ## 直近の変更履歴（最大10件）
 
+- 2026-03-05: 計画修正 — Phase 2 先頭タスク B-006 を N-009 として Next に昇格、Issue #19 を作成
 - 2026-03-05: **N-008 完了** — 統合テスト 16件を追加して PR #17 マージ、Issue #14 自動 Close、Should 2件修正済みで監査通過
 - 2026-03-05: **N-007 完了** — Tailwind レスポンシブクラス (122テスト) マージ、Issue #13 自動 Close、Must 2件修正済みで監査通過
 - 2026-03-05: **N-006 完了** — gradeCalculator.test.js (31テスト) マージ、Issue #12 自動 Close、Must 0 件で監査通過
@@ -150,5 +162,3 @@ GitHub Project: [Project Link](https://github.com/users/weimaraner69-crypto/proj
 - 2026-03-04: N-002（FastAPI 基盤）完了、CORS 設定・pytest 実装
 - 2026-03-04: N-001（React 基盤）完了、セキュリティ・信頼性監査で2ループ修正
 - 2026-03-03: MiraStudyプロジェクトの計画を作成（Phase 0-4、Next 3件、Backlog 20件）
-- 2026-03-03: デプロイ先をVercelに決定、バックエンドAPI同時実装の方針確定
-- 2026-03-03: ビルドツールをCreate React Appに決定
