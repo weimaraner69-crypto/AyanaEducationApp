@@ -21,6 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # スキャン対象ディレクトリ（プロジェクトに合わせて変更）
 SCAN_DIRS = [
+    REPO_ROOT / "backend",  # バックエンド実装を常時スキャン対象に含める
     REPO_ROOT / "src",
     REPO_ROOT / "tests",
     REPO_ROOT / "scripts",

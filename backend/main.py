@@ -8,6 +8,8 @@ import re as _re
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.services.mext_fetcher import fetch_latest_mext_pdf_urls
+
 # CORS オリジンの検証パターン（http(s)://で始まり、ワイルドカードを含まない）
 _ORIGIN_RE = _re.compile(r"^https?://[^*]+$")
 
@@ -58,3 +60,20 @@ app.add_middleware(
 def health_check() -> dict[str, str]:
     """ヘルスチェック結果を返す。"""
     return {"status": "ok"}
+
+
+@app.get("/api/mext/fetch")
+def mext_fetch() -> dict[str, object]:
+    """文科省サイトから PDF 候補 URL を取得して返す。
+
+    mext_fetcher.fetch_latest_mext_pdf_urls() に処理を委譲し、
+    予期しない例外をフェイルクローズで捕捉して error JSON を返す。
+    """
+    try:
+        return fetch_latest_mext_pdf_urls()
+    except Exception as exc:
+        return {
+            "status": "error",
+            "message": f"予期しないエラーが発生しました: {exc}",
+            "reason_code": "UNEXPECTED_ERROR",
+        }
