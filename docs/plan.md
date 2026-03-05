@@ -8,12 +8,12 @@
 
 ## 現状（Status）
 
-- フェーズ：**Phase 1 - Frontend MVP 仕上げ段階**
+- フェーズ：**Phase 1 - Frontend MVP 完了（Phase 2 準備）**
 - ブロッカー：なし
 - 直近の重要決定：
-  - Phase 1: N-004, N-005, N-006, N-007 完了 ✅
-  - 次は N-008（統合テスト）を実行
-  - 優先度: テスト品質向上 ✅ → レスポンシブ対応 ✅ → 統合テスト
+  - Phase 1: N-004, N-005, N-006, N-007, N-008 完了 ✅
+  - N-008 は PR #17 でマージ済み、Issue #14 は自動 Close 済み
+  - 次は Phase 2（Backend API）タスクを Next に昇格予定
 
 ## ロードマップ（概略）
 
@@ -35,20 +35,17 @@
 
 ## Next（自動実行対象：最大3件）
 
-
-### N-008 フロントエンドの統合テスト（React Testing Library）
-
-- 目的：ユーザーフロー全体をカバーする統合テストを追加し、エンドツーエンドの動作を保証する
-- 受入条件：
-  - ログイン → ホーム → 教科選択 → 単元入力 → クイズ表示の一連のフローをテストする
-  - 保護者モード切り替えのテストが存在する
-  - エラー処理（API失敗時）のテストが存在する
-  - 統合テストが `frontend/src/integration/` または `frontend/src/__tests__/` 配下に作成されている
-  - ESLint エラーなし、全テスト PASS
-- 依存：N-005（完了済み）
-- 触る領域：frontend/src/__tests__/ または frontend/src/integration/
+- （現在空。Phase 2 の Backlog から昇格予定）
 
 ## Done（完了）
+
+### ✅ N-008 フロントエンドの統合テスト（React Testing Library）
+
+- PR: #17 (2026-03-05 マージ)
+- 成果物: 統合テスト 16件（user-flow 8件 + error-handling 8件）、`frontend/src/test-utils.js` 共通化
+- 検証: Jest 138/138 PASS, ESLint 0 errors, pytest 13/13 PASS, policy_check OK
+- 監査: 3監査（spec/security/reliability）で Must 0件、初回 Should 2件は修正済み
+- 成果: AC（完全フロー/保護者モード/API失敗時エラー処理）をすべて充足
 
 ### ✅ N-007 レスポンシブデザインの検証とモバイル対応
 
@@ -138,12 +135,13 @@
 | N-005 React Router の導入とルーティング設定 | #11 | 1 | enhancement | ✅ CLOSED |
 | N-006 学年計算ロジックの単体テスト追加 | #12 | 1 | enhancement | ✅ CLOSED |
 | N-007 レスポンシブデザインの検証とモバイル寯応 | #13 | 1 | enhancement | ✅ CLOSED |
-| N-008 フロントエンドの統合テスト | #14 | 1 | enhancement | 🔵 OPEN |
+| N-008 フロントエンドの統合テスト | #14 | 1 | enhancement | ✅ CLOSED |
 
 GitHub Project: [Project Link](https://github.com/users/weimaraner69-crypto/projects/1) （作成予定）
 
 ## 直近の変更履歴（最大10件）
 
+- 2026-03-05: **N-008 完了** — 統合テスト 16件を追加して PR #17 マージ、Issue #14 自動 Close、Should 2件修正済みで監査通過
 - 2026-03-05: **N-007 完了** — Tailwind レスポンシブクラス (122テスト) マージ、Issue #13 自動 Close、Must 2件修正済みで監査通過
 - 2026-03-05: **N-006 完了** — gradeCalculator.test.js (31テスト) マージ、Issue #12 自動 Close、Must 0 件で監査通過
 - 2026-03-05: Phase 1 開始 — B-001 を N-004（コンポーネント分割）として Next に昇格
