@@ -8,12 +8,12 @@
 
 ## 現状（Status）
 
-- フェーズ：**Phase 0 - Foundation**（React + FastAPIセットアップ段階）
+- フェーズ：**Phase 0 - Foundation 完了** → **Phase 1 準備中**
 - ブロッカー：なし
 - 直近の重要決定：
-  - デプロイ先をVercelに決定（フロントエンド）
-  - バックエンドAPIも同時実装する方針
-  - ビルドツールはCreate React Appを採用
+  - Phase 0（React + FastAPI 基盤構築）完了 ✅
+  - 全3タスク（N-001, N-002, N-003）がマージ済み
+  - 次フェーズは Phase 1（Frontend MVP）へ移行
 
 ## ロードマップ（概略）
 
@@ -35,40 +35,28 @@
 
 ## Next（自動実行対象：最大3件）
 
-### N-001 Create React Appセットアップ + 提供コード配置
+（空 — Phase 1 タスクを昇格予定）
 
-- 目的：Reactアプリの基盤を作成し、ユーザー提供のApp.jsxを配置する
-- 受入条件：
-  - `npx create-react-app frontend` でプロジェクト作成完了
-  - Tailwind CSS + Lucide Reactがインストールされている
-  - 提供されたApp.jsxコードが動作する
-  - `npm start` でローカルサーバーが起動し、ログイン画面が表示される
-  - ESLintエラーがない
-- 依存：なし
-- 触る領域：frontend/, package.json, tailwind.config.js
+## Done（完了）
 
-### N-002 Python FastAPI基盤のセットアップ
+### ✅ N-001 Create React Appセットアップ + 提供コード配置
 
-- 目的：バックエンドAPIの基盤を構築し、ヘルスチェックエンドポイントを実装する
-- 受入条件：
-  - FastAPI + Uvicorn がインストールされている
-  - `/api/health` エンドポイントが200を返す
-  - CORSが設定され、localhostからのアクセスが許可されている
-  - `pytest` で基本的なテストが通る
-  - pyproject.toml または requirements.txt で依存関係が管理されている
-- 依存：なし
-- 触る領域：backend/, pyproject.toml or requirements.txt, tests/
+- PR: #5 (2026-03-04 マージ)
+- 成果物: frontend/ ディレクトリ、Tailwind CSS、Lucide React、App.js
+- 検証: ESLint 0 errors, npm start 動作確認済み
 
-### N-003 フロントエンド・バックエンド疎通確認
+### ✅ N-002 Python FastAPI基盤のセットアップ
 
-- 目的：React→FastAPIへの通信が成功することを確認する
-- 受入条件：
-  - フロントエンドから `/api/health` を呼び出し、レスポンスを表示できる
-  - エラーハンドリングが実装されている（ネットワークエラー時の表示）
-  - 環境変数でAPIベースURLを切り替え可能（REACT_APP_API_URL）
-  - 動作確認のスクリーンショットがPRに添付されている
-- 依存：N-001, N-002
-- 触る領域：frontend/src/, backend/main.py
+- PR: #6 (2026-03-04 マージ)
+- 成果物: backend/main.py, GET /api/health, CORS 設定, requirements.txt
+- 検証: pytest 3/3 PASS, policy_check OK
+
+### ✅ N-003 フロントエンド・バックエンド疎通確認
+
+- PR: #7 (2026-03-05 マージ)
+- 成果物: API 統合、タイムアウト機能、エラーハンドリング、.env.example
+- 検証: pytest 13/13 PASS, Jest 4/4 PASS, CI SUCCESS
+- 監査: 3監査（spec/security/reliability）で Must 0件、Should 7件全対応
 
 ## Backlog（保留）
 
@@ -106,16 +94,20 @@
 
 ## GitHub Issue / Project 対応表
 
-| 計画 | Issue | Phase | 種別 |
-|---|---|---|---|
-| N-001 Create React App + 提供コード配置 | #1 | 0 | enhancement |
-| N-002 Python FastAPI基盤セットアップ | #2 | 0 | enhancement |
-| N-003 フロントエンド・バックエンド疎通確認 | #3 | 0 | enhancement |
+| 計画 | Issue | Phase | 種別 | 状態 |
+|---|---|---|---|---|
+| N-001 Create React App + 提供コード配置 | #1 | 0 | enhancement | ✅ CLOSED |
+| N-002 Python FastAPI基盤セットアップ | #2 | 0 | enhancement | ✅ CLOSED |
+| N-003 フロントエンド・バックエンド疎通確認 | #3 | 0 | enhancement | ✅ CLOSED |
 
 GitHub Project: [Project Link](https://github.com/users/weimaraner69-crypto/projects/1) （作成予定）
 
 ## 直近の変更履歴（最大10件）
 
+- 2026-03-05: **Phase 0 完了** — N-001/N-002/N-003 すべてマージ、Issue #1/#2/#3 自動 Close
+- 2026-03-05: N-003 で独立監査を実施（Must 0件、Should 7件全対応）
+- 2026-03-04: N-002（FastAPI 基盤）完了、CORS 設定・pytest 実装
+- 2026-03-04: N-001（React 基盤）完了、セキュリティ・信頼性監査で2ループ修正
 - 2026-03-03: MiraStudyプロジェクトの計画を作成（Phase 0-4、Next 3件、Backlog 20件）
 - 2026-03-03: デプロイ先をVercelに決定、バックエンドAPI同時実装の方針確定
 - 2026-03-03: ビルドツールをCreate React Appに決定
