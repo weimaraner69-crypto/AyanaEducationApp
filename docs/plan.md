@@ -11,9 +11,9 @@
 - フェーズ：**Phase 1 - Frontend MVP 仕上げ段階**
 - ブロッカー：なし
 - 直近の重要決定：
-  - Phase 1: N-004, N-005 完了 ✅
-  - Phase 1 残タスク3件を Next に昇格（N-006, N-007, N-008）
-  - 優先度: テスト品質向上 → レスポンシブ対応 → 統合テスト
+  - Phase 1: N-004, N-005, N-006 完了 ✅
+  - 次は N-007（レスポンシブ対応）を実行
+  - 優先度: テスト品質向上 ✅ → レスポンシブ対応 → 統合テスト
 
 ## ロードマップ（概略）
 
@@ -34,19 +34,6 @@
 - G3: MEXT PDF連携・問題生成のMVPを完成させ、エンドツーエンドで動作させる
 
 ## Next（自動実行対象：最大3件）
-
-### N-006 学年計算ロジックの単体テスト追加
-
-- 目的：`utils/gradeCalculator.js` の `calculateStudentInfo` 関数に対する単体テストを追加し、境界値・エッジケースを網羅する
-- 受入条件：
-  - `gradeCalculator.test.js` が `frontend/src/utils/` 配下に作成されている
-  - 境界値テスト（4月1日生まれ、3月31日生まれ、学年境界）を含む
-  - 年齢計算の正確性を検証するテストが存在する
-  - 小学校・中学校・高校・未就学・卒業生の判定ロジックをカバーする
-  - 20歳での権限移譲フラグ（isAdult）のテストが存在する
-  - ESLint エラーなし
-- 依存：N-004（完了済み）
-- 触る領域：frontend/src/utils/gradeCalculator.test.js
 
 ### N-007 レスポンシブデザインの検証とモバイル対応
 
@@ -74,6 +61,14 @@
 - 触る領域：frontend/src/__tests__/ または frontend/src/integration/
 
 ## Done（完了）
+
+### ✅ N-006 学年計算ロジックの単体テスト追加
+
+- PR: #15 (2026-03-05 マージ)
+- 成果物: gradeCalculator.test.js (31 テストケース)
+- 検証: Jest 98/98 PASS (+31 新規テスト), ESLint 0 errors, pytest 13/13 PASS, policy_check OK
+- 監査: 3監査（spec/security/reliability）で Must 0件、Should 11件（非ブロッカー）
+- 成果: AC-070〜AC-073 全充足、基準日固定で再現性確保（NFR-001 準拠）
 
 ### ✅ N-005 React Router の導入とルーティング設定
 
@@ -145,7 +140,7 @@
 | N-003 フロントエンド・バックエンド疎通確認 | #3 | 0 | enhancement | ✅ CLOSED |
 | N-004 App コンポーネントの分割 | #8 | 1 | enhancement | ✅ CLOSED |
 | N-005 React Router の導入とルーティング設定 | #11 | 1 | enhancement | ✅ CLOSED |
-| N-006 学年計算ロジックの単体テスト追加 | #12 | 1 | enhancement | 🔵 OPEN |
+| N-006 学年計算ロジックの単体テスト追加 | #12 | 1 | enhancement | ✅ CLOSED |
 | N-007 レスポンシブデザインの検証とモバイル対応 | #13 | 1 | enhancement | 🔵 OPEN |
 | N-008 フロントエンドの統合テスト | #14 | 1 | enhancement | 🔵 OPEN |
 
@@ -153,6 +148,7 @@ GitHub Project: [Project Link](https://github.com/users/weimaraner69-crypto/proj
 
 ## 直近の変更履歴（最大10件）
 
+- 2026-03-05: **N-006 完了** — gradeCalculator.test.js (31テスト) マージ、Issue #12 自動 Close、Must 0 件で監査通過
 - 2026-03-05: Phase 1 開始 — B-001 を N-004（コンポーネント分割）として Next に昇格
 - 2026-03-05: **Phase 0 完了** — N-001/N-002/N-003 すべてマージ、Issue #1/#2/#3 自動 Close
 - 2026-03-05: N-003 で独立監査を実施（Must 0件、Should 7件全対応）
