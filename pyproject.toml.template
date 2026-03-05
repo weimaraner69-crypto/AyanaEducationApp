@@ -17,7 +17,9 @@ version = "0.1.0"
 # {{PROJECT_DESCRIPTION}}: project-config.yml の project.description に対応
 description = "{{PROJECT_DESCRIPTION}}"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "pdfplumber>=0.10.3",
+]
 
 [project.optional-dependencies]
 # OpenTelemetry 計装に必要な依存ライブラリ。
