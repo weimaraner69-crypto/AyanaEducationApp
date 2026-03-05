@@ -74,11 +74,10 @@ describe('Quiz コンポーネント', () => {
     });
 
     test('インタラクション: Evidence Viewer の閉じるボタンで閉じる', () => {
-      const { container } = render(<Quiz {...baseProps} screen="quiz" />);
+      render(<Quiz {...baseProps} screen="quiz" />);
       fireEvent.click(screen.getByText(/証拠を表示/));
       expect(screen.getByText('証拠を確認')).toBeInTheDocument();
-      // X ボタンは rounded-full クラスを持つ唯一のボタン
-      const closeBtn = container.querySelector('button.rounded-full');
+      const closeBtn = screen.getByRole('button', { name: '閉じる' });
       fireEvent.click(closeBtn);
       expect(screen.queryByText('証拠を確認')).not.toBeInTheDocument();
     });

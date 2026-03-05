@@ -15,7 +15,7 @@ const ModalBase = ({ title, subTitle, icon: Icon, color, children, onClose }) =>
             <p className={`text-[10px] font-black uppercase tracking-widest ${color === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{subTitle}</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full transition-colors text-slate-300"><X size={32} /></button>
+        <button onClick={onClose} aria-label="閉じる" className="p-2 hover:bg-black/5 rounded-full transition-colors text-slate-300"><X size={32} /></button>
       </div>
       <div className="p-6 sm:p-10 overflow-y-auto max-h-[75vh] space-y-6 text-left">{children}</div>
     </div>
@@ -66,7 +66,7 @@ const Quiz = ({ inputData, academicStage, mode, sourceUrl, onBack, analysisStep,
   // 解析中ローディング画面
   if (screen === 'analyzing') {
     return (
-      <div className={`min-h-screen ${mode === 'normal' ? (academicStage === 'es' ? 'bg-amber-500' : 'bg-indigo-600') : 'bg-rose-600'} px-4 py-8 sm:p-8 flex flex-col items-center justify-center text-white text-center transition-colors`}>
+      <div data-testid="quiz-screen" className={`min-h-screen ${mode === 'normal' ? (academicStage === 'es' ? 'bg-amber-500' : 'bg-indigo-600') : 'bg-rose-600'} px-4 py-8 sm:p-8 flex flex-col items-center justify-center text-white text-center transition-colors`}>
         <div className="relative mb-16 text-white">
           <div className="w-32 h-32 border-8 border-white/20 border-t-white rounded-full animate-spin"></div>
           <BrainCircuit className="absolute inset-0 m-auto animate-pulse" size={48} />
