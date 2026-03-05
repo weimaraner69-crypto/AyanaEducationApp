@@ -7,28 +7,15 @@
  * MemoryRouter を使用してルーティングをシミュレートし、
  * React 19 + React Router v6 環境で動作することを確認する。
  */
-import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import App from '../../App';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import { healthCheck } from '../../services/api';
+import { renderApp } from '../../test-utils';
 
 /** services/api をモック化してネットワークアクセスを排除する */
 jest.mock('../../services/api', () => ({
   healthCheck: jest.fn(),
   API_BASE_URL: 'http://127.0.0.1:8000',
 }));
-
-/**
- * App コンポーネントを MemoryRouter でラップしてレンダリングするヘルパー
- * @param {string[]} initialEntries - 初期ルートパス（デフォルト: /login）
- */
-const renderApp = (initialEntries = ['/login']) =>
-  render(
-    <MemoryRouter initialEntries={initialEntries}>
-      <App />
-    </MemoryRouter>
-  );
 
 // ============================================================
 // AC-3: API 失敗時のエラー処理
