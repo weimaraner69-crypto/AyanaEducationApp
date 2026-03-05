@@ -18,6 +18,7 @@
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "chat.tools.terminal.autoApprove": {
-    "npm run build": true
+    "npm run build": true,
+    "gh": true
   }
 }
