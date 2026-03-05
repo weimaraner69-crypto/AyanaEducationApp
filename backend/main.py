@@ -3,13 +3,25 @@
 from __future__ import annotations
 
 import os
+import re as _re
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+# CORS オリジンの検証パターン（http(s)://で始まり、ワイルドカードを含まない）
+_ORIGIN_RE = _re.compile(r"^https?://[^*]+$")
+
 
 def _get_cors_origins() -> list[str]:
-    """許可する CORS オリジン一覧を返す。"""
+    """許可する CORS オリジン一覧を返す。
+
+    環境変数 BACKEND_CORS_ORIGINS に指定されたオリジンは検証される：
+    - http(s):// で始まる
+    - ワイルドカード（*）を含まない
+    - "null" など仮想オリジンを含まない
+
+    検証に失敗したオリジンは黙か除外される。
+    """
     default_origins = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
@@ -17,8 +29,12 @@ def _get_cors_origins() -> list[str]:
         "http://127.0.0.1:5173",
     ]
     env_origins = os.getenv("BACKEND_CORS_ORIGINS", "")
-    extra_origins = [origin.strip()
-                     for origin in env_origins.split(",") if origin.strip()]
+    # 入力検証：http(s)://で始まり、ワイルドカードでないオリジンのみ許可
+    extra_origins = [
+        origin.strip()
+        for origin in env_origins.split(",")
+        if origin.strip() and _ORIGIN_RE.match(origin.strip())
+    ]
 
     merged: list[str] = []
     for origin in [*default_origins, *extra_origins]:
@@ -33,8 +49,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_get_cors_origins(),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET"],  # N-003 段階では GET のみ許可
+    allow_headers=["Content-Type"],  # 必要最小限のヘッダのみ許可
 )
 
 

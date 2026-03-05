@@ -39,16 +39,12 @@ const App = () => {
   const [mode, setMode] = useState('normal');
   const [inputData, setInputData] = useState({ unit: '', image: null });
   const [analysisStep, setAnalysisStep] = useState(0);
-  const [showGuidelineDetail, setShowGuidelineDetail] = useState(false);
-  const [showHintModal, setShowHintModal] = useState(false);
-  const [showAccountSettings, setShowAccountSettings] = useState(false);
-  const [showHowToUse, setShowHowToUse] = useState(false);
-  const [showSystemSpecs, setShowSystemSpecs] = useState(false);
   const [showEvidenceViewer, setShowEvidenceViewer] = useState(false);
-  const [feedback, setFeedback] = useState(null);
   const [userAnswer, setUserAnswer] = useState('');
   const [isAutoCollecting, setIsAutoCollecting] = useState(false);
   const [collectStep, setCollectStep] = useState(0);
+  const [apiHealth, setApiHealth] = useState({ state: 'idle', message: '未確認' });
+  const apiBaseUrl = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
   const TODAY = useMemo(() => new Date(), []);
 
   const profiles = useMemo(() => {
@@ -119,7 +115,57 @@ const App = () => {
     }
   }, [screen]);
 
-  const resetToHome = () => { setScreen('home'); setSubject(null); setFeedback(null); setUserAnswer(''); };
+  useEffect(() => {
+    if (screen !== 'home') return undefined;
+
+    const controller = new AbortController();
+    const HEALTH_TIMEOUT_MS = 5000;
+
+    const fetchHealth = async () => {
+      setApiHealth({ state: 'loading', message: '接続確認中...' });
+
+      // タイムアウトを設定する
+      const timer = setTimeout(() => controller.abort(), HEALTH_TIMEOUT_MS);
+
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/health`, {
+          method: 'GET',
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        setApiHealth({ state: 'success', message: `接続成功: ${data.status}` });
+      } catch (error) {
+        clearTimeout(timer);
+
+        if (controller.signal.aborted) {
+          // エラーメッセージを改善：タイムアウトかネットワーク障害か区別
+          if (error.name === 'AbortError') {
+            setApiHealth({
+              state: 'error',
+              message: `接続失敗: タイムアウト（${HEALTH_TIMEOUT_MS / 1000}秒以上応答がありません）`
+            });
+          }
+          return;
+        }
+
+        // HTTP ステータスエラーの場合は詳細を表示
+        const msg = error.message?.startsWith('HTTP ')
+          ? `接続失敗: ${error.message}`
+          : '接続失敗: バックエンドに接続できません';
+        setApiHealth({ state: 'error', message: msg });
+      }
+    };
+
+    fetchHealth();
+    return () => controller.abort();
+  }, [screen, apiBaseUrl]);
+
+  const resetToHome = () => { setScreen('home'); setSubject(null); setUserAnswer(''); };
 
   const ModalBase = ({ title, subTitle, icon: Icon, color, children, onClose }) => (
     <div className="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 text-left">
@@ -219,6 +265,16 @@ const App = () => {
             </div>
           </div>
           <button onClick={handleLogout} className="p-3 bg-white border border-slate-200 rounded-xl text-rose-500 hover:bg-rose-50 shadow-sm transition-all"><LogOut size={18} /></button>
+        </div>
+        <div className="w-full max-w-md mb-6 bg-white rounded-2xl border border-slate-100 shadow-sm px-4 py-3">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Backend Health</p>
+          <p
+            data-testid="api-health-message"
+            className={`text-sm font-black ${apiHealth.state === 'success' ? 'text-emerald-600' : apiHealth.state === 'error' ? 'text-rose-600' : 'text-slate-500'}`}
+          >
+            {apiHealth.message}
+          </p>
+          <p className="text-[10px] font-mono text-slate-400 mt-1 truncate">{apiBaseUrl}/api/health</p>
         </div>
         {userRole === 'student' ? (
           <div className="w-full max-w-md space-y-8 animate-in fade-in duration-500 text-slate-900">
@@ -386,7 +442,11 @@ const App = () => {
               <ShieldCheck size={16} />
               証拠を表示（MEXT PDF確認）
             </button>
-            <button onClick={() => setFeedback({ type: userAnswer.trim().toLowerCase() === (academicStage === 'es' ? '480' : 'am') ? 'success' : 'error' })} className={`w-full py-6 bg-indigo-600 text-white font-black text-xl rounded-[2.5rem] shadow-2xl active:scale-95 transition-all font-black shadow-indigo-100`}>答え合わせ</button>
+            <button onClick={() => {
+              const isCorrect = userAnswer.trim().toLowerCase() === (academicStage === 'es' ? '480' : 'am');
+              // フィードバック処理は将来実装予定
+              console.log(isCorrect ? '正解' : '不正解');
+            }} className={`w-full py-6 bg-indigo-600 text-white font-black text-xl rounded-[2.5rem] shadow-2xl active:scale-95 transition-all font-black shadow-indigo-100`}>答え合わせ</button>
           </div>
         </div>
         <EvidenceViewer
