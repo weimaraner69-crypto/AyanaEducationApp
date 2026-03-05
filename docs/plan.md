@@ -115,7 +115,8 @@
 | N-001 Create React App + 提供コード配置 | #1 | 0 | enhancement | ✅ CLOSED |
 | N-002 Python FastAPI基盤セットアップ | #2 | 0 | enhancement | ✅ CLOSED |
 | N-003 フロントエンド・バックエンド疎通確認 | #3 | 0 | enhancement | ✅ CLOSED |
-| N-004 App コンポーネントの分割 | #8 | 1 | enhancement | 🔵 OPEN |
+| N-004 App コンポーネントの分割 | #8 | 1 | enhancement | ✅ CLOSED |
+| N-005 React Router の導入とルーティング設定 | #11 | 1 | enhancement | 🔵 OPEN |
 
 GitHub Project: [Project Link](https://github.com/users/weimaraner69-crypto/projects/1) （作成予定）
 
