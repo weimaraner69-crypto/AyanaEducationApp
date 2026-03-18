@@ -1,33 +1,105 @@
-import { healthCheck, API_BASE_URL } from './api';
+import { healthCheck, API_BASE_URL, fetchMextPdf, generateQuestion } from './api';
 
 afterEach(() => {
   jest.restoreAllMocks();
-});
 
-describe('API_BASE_URL', () => {
-  test('デフォルトで http://127.0.0.1:8000 が設定される', () => {
-    expect(API_BASE_URL).toBe('http://127.0.0.1:8000');
+  describe('API_BASE_URL', () => {
+    test('デフォルトで http://127.0.0.1:8000 が設定される', () => {
+      expect(API_BASE_URL).toBe('http://127.0.0.1:8000');
+    });
   });
-});
 
-describe('healthCheck', () => {
-  test('正常系: {ok: true, data} が返る', async () => {
-    jest.spyOn(global, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ status: 'ok' }),
+  describe('healthCheck', () => {
+    test('正常系: {ok: true, data} が返る', async () => {
+      jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: 'ok' }),
+      });
+
+      const result = await healthCheck();
+      expect(result.ok).toBe(true);
+      expect(result.data).toEqual({ status: 'ok' });
     });
 
-    const result = await healthCheck();
-    expect(result.ok).toBe(true);
-    expect(result.data).toEqual({ status: 'ok' });
+    test('エラー系: ネットワーク障害時に {ok: false, message} が返る', async () => {
+      jest.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('network error'));
+
+      const result = await healthCheck();
+      expect(result.ok).toBe(false);
+      expect(result.message).toBe('バックエンドに接続できません');
+    });
   });
 
-  test('エラー系: ネットワーク障害時に {ok: false, message} が返る', async () => {
-    jest.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('network error'));
+  describe('fetchMextPdf', () => {
+    test('正常系: PDF取得成功', async () => {
+      jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ pdf: 'data', meta: { url: 'https://mext.go.jp/sample.pdf' } }),
+      });
+      const result = await fetchMextPdf('https://mext.go.jp/sample.pdf');
+      expect(result.ok).toBe(true);
+      expect(result.data).toEqual({ pdf: 'data', meta: { url: 'https://mext.go.jp/sample.pdf' } });
+    });
+    test('失敗系: HTTP 404', async () => {
+      jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+      });
+      const result = await fetchMextPdf('https://mext.go.jp/notfound.pdf');
+      expect(result.ok).toBe(false);
+      expect(result.message).toBe('HTTP 404');
+    });
+    test('失敗系: ネットワーク障害', async () => {
+      jest.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('network error'));
+      const result = await fetchMextPdf('https://mext.go.jp/sample.pdf');
+      expect(result.ok).toBe(false);
+      expect(result.message).toBe('PDF取得に失敗しました');
+    });
+    test('境界値: 空URL', async () => {
+      jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+      });
+      const result = await fetchMextPdf('');
+      expect(result.ok).toBe(false);
+      expect(result.message).toBe('HTTP 400');
+    });
+  });
 
-    const result = await healthCheck();
-    expect(result.ok).toBe(false);
-    expect(result.message).toBe('バックエンドに接続できません');
+  describe('generateQuestion', () => {
+    test('正常系: 問題生成成功', async () => {
+      jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ question: 'Q1', choices: ['A', 'B'], answer: 'A' }),
+      });
+      const result = await generateQuestion({ pdf: 'data' });
+      expect(result.ok).toBe(true);
+      expect(result.data).toEqual({ question: 'Q1', choices: ['A', 'B'], answer: 'A' });
+    });
+    test('失敗系: HTTP 500', async () => {
+      jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      });
+      const result = await generateQuestion({ pdf: 'data' });
+      expect(result.ok).toBe(false);
+      expect(result.message).toBe('HTTP 500');
+    });
+    test('失敗系: ネットワーク障害', async () => {
+      jest.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('network error'));
+      const result = await generateQuestion({ pdf: 'data' });
+      expect(result.ok).toBe(false);
+      expect(result.message).toBe('問題生成に失敗しました');
+    });
+    test('境界値: 空データ', async () => {
+      jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+      });
+      const result = await generateQuestion({});
+      expect(result.ok).toBe(false);
+      expect(result.message).toBe('HTTP 400');
+    });
   });
 
   test('エラー系: HTTP 503 のとき {ok: false, message: "HTTP 503"} が返る', async () => {

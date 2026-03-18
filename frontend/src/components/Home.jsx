@@ -5,7 +5,7 @@ import {
   ShieldCheck, User
 } from 'lucide-react';
 import SubjectSelector from './SubjectSelector';
-import { healthCheck, API_BASE_URL } from '../services/api';
+import { healthCheck, API_BASE_URL, fetchMextPdf, generateQuestion, uploadPdf } from '../services/api';
 
 /**
  * URL のスキーム検証（セキュリティ対策）
@@ -40,6 +40,13 @@ const Home = ({
   const [apiHealth, setApiHealth] = useState({ state: 'idle', message: '未確認' });
   const [isAutoCollecting, setIsAutoCollecting] = useState(false);
   const [collectStep, setCollectStep] = useState(0);
+  // MEXT PDF取得API用状態
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [pdfFetchResult, setPdfFetchResult] = useState(null);
+  // 問題生成API用状態
+  const [questionPayload, setQuestionPayload] = useState(null);
+  const [questionResult, setQuestionResult] = useState(null);
+  const [apiError, setApiError] = useState(null);
 
   /** 文科省ソース自動収集（デモ動作） */
   const startAutoCollect = () => {
@@ -74,6 +81,38 @@ const Home = ({
     return () => controller.abort();
   }, []);
 
+  // MEXT PDF取得API呼び出し
+  const handleFetchPdf = async () => {
+    setPdfFetchResult(null);
+    setApiError(null);
+    if (!pdfUrl) {
+      setApiError('PDF URLを入力してください');
+      return;
+    }
+    const result = await fetchMextPdf(pdfUrl);
+    if (result.ok) {
+      setPdfFetchResult(result.data);
+    } else {
+      setApiError(result.message);
+    }
+  };
+
+  // 問題生成API呼び出し
+  const handleGenerateQuestion = async () => {
+    setQuestionResult(null);
+    setApiError(null);
+    if (!pdfFetchResult) {
+      setApiError('PDF解析結果がありません');
+      return;
+    }
+    const result = await generateQuestion(pdfFetchResult);
+    if (result.ok) {
+      setQuestionResult(result.data);
+    } else {
+      setApiError(result.message);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] px-4 py-6 sm:p-6 flex flex-col items-center">
       {/* ヘッダー: ユーザー情報・ログアウトボタン */}
@@ -103,6 +142,30 @@ const Home = ({
         </p>
         <p className="text-[10px] font-mono text-slate-400 mt-1 truncate">{API_BASE_URL}/api/health</p>
       </div>
+
+
+      {/* 科目選択後のみ問題生成UIを表示 */}
+      {userRole === 'student' && questionPayload && (
+        <div className="w-full max-w-md md:max-w-2xl mb-6 bg-white rounded-2xl border border-slate-100 shadow-sm px-4 py-3">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">問題生成API</p>
+          <button
+            onClick={handleGenerateQuestion}
+            className="w-full py-2 bg-emerald-600 text-white font-black rounded mb-2"
+          >問題生成</button>
+          {questionResult && (
+            <div className="bg-indigo-50 border border-indigo-200 rounded p-2 text-sm mt-2">
+              <pre>{JSON.stringify(questionResult, null, 2)}</pre>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* エラー表示 */}
+      {apiError && (
+        <div className="w-full max-w-md md:max-w-2xl mb-6 bg-rose-100 border border-rose-200 rounded-2xl px-4 py-3 text-rose-700 font-black">
+          エラー: {apiError}
+        </div>
+      )}
 
       {/* 学生ビュー */}
       {userRole === 'student' ? (
@@ -164,6 +227,67 @@ const Home = ({
               </div>
             )}
             <div className="space-y-3 pt-4 border-t border-slate-50">
+              {/* PDFドラッグ&ドロップ/ファイル選択UI（保護者用） */}
+              {userRole === 'parent' && (
+                <div className="mb-4">
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">PDFファイルを追加</label>
+                  <div
+                    onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={async e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const file = e.dataTransfer.files[0];
+                      if (file && file.type === 'application/pdf') {
+                        setApiError(null);
+                        setApiHealth({ state: 'loading', message: 'PDFアップロード中...' });
+                        const result = await uploadPdf(file);
+                        if (result.ok) {
+                          setApiHealth({ state: 'success', message: `PDFアップロード成功: ${file.name}` });
+                          setPdfFetchResult(result.data);
+                        } else {
+                          setApiHealth({ state: 'error', message: result.message });
+                        }
+                      } else {
+                        setApiHealth({ state: 'error', message: 'PDFファイルのみ対応しています' });
+                      }
+                    }}
+                    className="w-full p-6 border-2 border-dashed border-indigo-300 rounded-xl text-center text-indigo-600 bg-indigo-50 hover:bg-indigo-100 cursor-pointer mb-2"
+                    style={{ minHeight: 80 }}
+                  >
+                    ここにPDFファイルをドラッグ＆ドロップ
+                  </div>
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    style={{ display: 'none' }}
+                    id="pdf-upload-input"
+                    onChange={async e => {
+                      const file = e.target.files[0];
+                      if (file && file.type === 'application/pdf') {
+                        setApiError(null);
+                        setApiHealth({ state: 'loading', message: 'PDFアップロード中...' });
+                        const result = await uploadPdf(file);
+                        if (result.ok) {
+                          setApiHealth({ state: 'success', message: `PDFアップロード成功: ${file.name}` });
+                          setPdfFetchResult(result.data);
+                        } else {
+                          setApiHealth({ state: 'error', message: result.message });
+                        }
+                      } else {
+                        setApiHealth({ state: 'error', message: 'PDFファイルのみ対応しています' });
+                      }
+                    }}
+                  />
+                  <label htmlFor="pdf-upload-input" className="block mt-2 text-indigo-700 underline cursor-pointer text-xs">ファイルを選択</label>
+                  {/* アップロード結果の表示 */}
+                  {pdfFetchResult && (
+                    <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded p-2 text-sm">
+                      <div className="font-bold text-emerald-700 mb-1">解析結果（JSON）:</div>
+                      <pre className="text-xs whitespace-pre-wrap break-all">{JSON.stringify(pdfFetchResult, null, 2)}</pre>
+                    </div>
+                  )}
+                </div>
+              )}
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
                 <Link2 size={10} /> Verified Knowledge Links
               </p>
