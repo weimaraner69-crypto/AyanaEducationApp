@@ -1,15 +1,55 @@
-"""FastAPI バックエンドのエントリポイント。"""
-
+# FastAPI バックエンドのエントリポイント。
 from __future__ import annotations
-
+from fastapi import FastAPI, Request, Body, UploadFile, File
 import os
 import re as _re
-
-from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-
+import urllib.request
 from backend.services.mext_fetcher import fetch_latest_mext_pdf_urls
 from backend.services.question_generator import generate_question, QuestionGenerationError
+from backend.services.mext_pdf_parser import parse_mext_pdf, ParseMextPdfError
+
+app = FastAPI(title="MiraStudy Backend API", version="0.1.0")
+# URL指定PDFダウンロード＆解析エンドポイント
+
+
+@app.post("/api/pdf/process")
+async def pdf_process(payload: dict = Body(...)) -> dict[str, object]:
+    """
+    PDFのURLを受信し、ダウンロードして解析結果（テキスト・表データ）を返す。
+    失敗時は理由コード付きでfail-close。
+    """
+    url = payload.get("url")
+    if not url or not isinstance(url, str):
+        return {"status": "fail", "reason_code": "NO_URL", "message": "URLが指定されていません"}
+    try:
+        with urllib.request.urlopen(url) as response:
+            pdf_bytes = response.read()
+        result = parse_mext_pdf(pdf_bytes)
+        return {"status": "ok", "data": result}
+    except ParseMextPdfError as pe:
+        return {"status": "fail", "reason_code": pe.reason_code, "message": str(pe)}
+    except Exception as exc:
+        return {"status": "error", "reason_code": "UNEXPECTED_ERROR", "message": f"予期しないエラー: {exc}"}
+# PDFアップロード・解析エンドポイント
+
+
+@app.post("/api/pdf/upload")
+async def pdf_upload(file: UploadFile = File(...)) -> dict[str, object]:
+    """
+    PDFファイルを受信し、テキスト・表データを抽出して返す。
+    失敗時は理由コード付きでfail-close。
+    """
+    try:
+        content = await file.read()
+        result = parse_mext_pdf(content)
+        return {"status": "ok", "data": result}
+    except ParseMextPdfError as pe:
+        return {"status": "fail", "reason_code": pe.reason_code, "message": str(pe)}
+    except Exception as exc:
+        return {"status": "error", "reason_code": "UNEXPECTED_ERROR", "message": f"予期しないエラー: {exc}"}
+"""FastAPI バックエンドのエントリポイント。"""
+
 
 # CORS オリジンの検証パターン（http(s)://で始まり、ワイルドカードを含まない）
 _ORIGIN_RE = _re.compile(r"^https?://[^*]+$")
@@ -57,6 +97,8 @@ app.add_middleware(
 )
 
 # B-008: 問題生成エンドポイント
+
+
 @app.post("/api/question/generate")
 async def question_generate(request: Request) -> dict[str, object]:
     """

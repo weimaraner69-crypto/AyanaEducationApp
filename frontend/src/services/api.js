@@ -1,3 +1,28 @@
+/**
+ * PDFファイルをアップロードして解析するAPI（POST /api/pdf/upload）
+ * @param {File} file - アップロードするPDFファイル
+ * @returns {Promise<{ok: boolean, data?: object, message?: string}>}
+ */
+export const uploadPdf = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/pdf/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    return { ok: true, data };
+  } catch (error) {
+    const msg = error.message?.startsWith('HTTP ')
+      ? error.message
+      : 'PDFアップロードに失敗しました';
+    return { ok: false, message: msg };
+  }
+};
 // API ベース URL（環境変数から読み込む）
 const API_BASE_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
 
@@ -64,6 +89,55 @@ export const healthCheck = async (externalSignal) => {
     if (externalSignal) {
       externalSignal.removeEventListener('abort', abortHandler);
     }
+  }
+};
+
+/**
+ * MEXT PDF取得APIを呼び出す（GET /api/mext/fetch）
+ * @param {string} pdfUrl - 取得対象のPDF URL
+ * @returns {Promise<{ok: boolean, data?: object, message?: string, timeout?: boolean}>}
+ */
+export const fetchMextPdf = async (pdfUrl) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/mext/fetch?url=${encodeURIComponent(pdfUrl)}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    return { ok: true, data };
+  } catch (error) {
+    const msg = error.message?.startsWith('HTTP ')
+      ? error.message
+      : 'PDF取得に失敗しました';
+    return { ok: false, message: msg };
+  }
+};
+
+/**
+ * 問題生成APIを呼び出す（POST /api/question/generate）
+ * @param {object} payload - 生成用データ（PDF解析結果など）
+ * @returns {Promise<{ok: boolean, data?: object, message?: string, timeout?: boolean}>}
+ */
+export const generateQuestion = async (payload) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/question/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    return { ok: true, data };
+  } catch (error) {
+    const msg = error.message?.startsWith('HTTP ')
+      ? error.message
+      : '問題生成に失敗しました';
+    return { ok: false, message: msg };
   }
 };
 
