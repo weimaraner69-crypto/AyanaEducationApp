@@ -117,6 +117,39 @@ export const fetchMextPdf = async (pdfUrl) => {
 };
 
 /**
+ * PDF URLを指定して解析APIを呼び出す（POST /api/pdf/process）
+ * @param {string} url - 解析対象のPDF URL
+ * @returns {Promise<{ok: boolean, data?: object, message?: string, timeout?: boolean}>}
+ */
+export const processPdf = async (url) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/pdf/process`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    return { ok: true, data };
+  } catch (error) {
+    clearTimeout(timer);
+    if (controller.signal.aborted) {
+      return { ok: false, message: 'PDF解析がタイムアウトしました', timeout: true };
+    }
+    const msg = error.message?.startsWith('HTTP ')
+      ? error.message
+      : 'PDF解析に失敗しました';
+    return { ok: false, message: msg };
+  }
+};
+
+/**
  * 問題生成APIを呼び出す（POST /api/question/generate）
  * @param {object} payload - 生成用データ（PDF解析結果など）
  * @returns {Promise<{ok: boolean, data?: object, message?: string, timeout?: boolean}>}

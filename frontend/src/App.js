@@ -6,6 +6,7 @@ import {
   Languages, LayoutGrid, Library, Palette, Pencil, Scissors, Sun
 } from 'lucide-react';
 import { calculateStudentInfo } from './utils/gradeCalculator';
+import { processPdf, generateQuestion } from './services/api';
 import Login from './components/Login';
 import Home from './components/Home';
 import UnitInput from './components/UnitInput';
@@ -23,6 +24,10 @@ const App = () => {
   const [inputData, setInputData] = useState({ unit: '', image: null });
   const [analysisStep, setAnalysisStep] = useState(0);
   const [screen, setScreen] = useState('quiz');
+  const [questionData, setQuestionData] = useState(null);
+  const [apiError, setApiError] = useState(null);
+  const [apiReady, setApiReady] = useState(false);
+  const [animationDone, setAnimationDone] = useState(false);
   const [masterSources, setMasterSources] = useState([
     { id: 1, name: "小学校学習指導要領解説_算数編.pdf", pushedBy: "MEXT Auto", active: true, stage: 'es', url: "https://www.mext.go.jp/content/20220608-mxt_kyoiku01-100002607_04.pdf" },
     { id: 2, name: "中学校学習指導要領解説_外国語編.pdf", pushedBy: "MEXT Auto", active: true, stage: 'jhs', url: "https://www.mext.go.jp/content/20210317-mxt_kyoiku01-100002608_010.pdf" },
@@ -101,12 +106,49 @@ const App = () => {
     navigate('/unit-input');
   }, [navigate]);
 
-  /** AI 解析開始 */
-  const handleGenerate = useCallback(() => {
+  /** AI 解析開始（バックエンドAPI呼び出しを含む） */
+  const handleGenerate = useCallback(async () => {
     setScreen('analyzing');
     setAnalysisStep(0);
+    setQuestionData(null);
+    setApiError(null);
+    setApiReady(false);
+    setAnimationDone(false);
     navigate('/quiz');
-  }, [navigate]);
+
+    // バックグラウンドでAPI呼び出しを実行する
+    try {
+      // 学年に適合するアクティブなソースURLを選択する
+      const source = masterSources.find(s => s.active && s.stage === academicStage);
+      if (!source?.url) {
+        throw new Error('適切なPDFソースが見つかりません');
+      }
+
+      // PDF をダウンロード・解析する
+      const pdfResult = await processPdf(source.url);
+      if (!pdfResult.ok) {
+        throw new Error(pdfResult.message || 'PDF解析に失敗しました');
+      }
+      if (pdfResult.data?.status !== 'ok') {
+        throw new Error(pdfResult.data?.message || 'PDF解析でエラーが発生しました');
+      }
+
+      // 解析結果から問題を生成する
+      const questionResult = await generateQuestion(pdfResult.data.data);
+      if (!questionResult.ok) {
+        throw new Error(questionResult.message || '問題生成に失敗しました');
+      }
+      if (questionResult.data?.status !== 'ok') {
+        throw new Error(questionResult.data?.message || '問題生成でエラーが発生しました');
+      }
+
+      setQuestionData(questionResult.data.data);
+    } catch (error) {
+      setApiError(error.message);
+    } finally {
+      setApiReady(true);
+    }
+  }, [navigate, masterSources, academicStage]);
 
   /** ホーム画面へ戻る */
   const resetToHome = useCallback(() => {
@@ -115,18 +157,30 @@ const App = () => {
     navigate('/home');
   }, [navigate]);
 
-  // 解析中アニメーションが完了したらクイズ画面へ遷移する
+  // 解析中アニメーションのステップを進行させる
   useEffect(() => {
     if (screen === 'analyzing' && location.pathname === '/quiz') {
       const interval = setInterval(() => {
         setAnalysisStep(prev => {
-          if (prev >= 3) { clearInterval(interval); setTimeout(() => setScreen('quiz'), 800); return prev; }
+          if (prev >= 3) {
+            clearInterval(interval);
+            setAnimationDone(true);
+            return prev;
+          }
           return prev + 1;
         });
       }, 1000);
       return () => clearInterval(interval);
     }
   }, [screen, location.pathname]);
+
+  // アニメーション完了とAPI応答の両方を待ってクイズ画面に遷移する
+  useEffect(() => {
+    if (animationDone && apiReady) {
+      const timer = setTimeout(() => setScreen('quiz'), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [animationDone, apiReady]);
 
   return (
     <Routes>
@@ -192,6 +246,8 @@ const App = () => {
               onBack={resetToHome}
               analysisStep={analysisStep}
               screen={screen}
+              questionData={questionData}
+              apiError={apiError}
             />
           ) : (
             <Navigate to="/login" replace />

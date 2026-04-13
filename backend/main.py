@@ -1,55 +1,24 @@
-# FastAPI バックエンドのエントリポイント。
+"""FastAPI バックエンドのエントリポイント。"""
 from __future__ import annotations
-from fastapi import FastAPI, Request, Body, UploadFile, File
+
 import os
 import re as _re
-from fastapi.middleware.cors import CORSMiddleware
+import urllib.parse
 import urllib.request
+
+from fastapi import FastAPI, Body, File, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+
 from backend.services.mext_fetcher import fetch_latest_mext_pdf_urls
-from backend.services.question_generator import generate_question, QuestionGenerationError
-from backend.services.mext_pdf_parser import parse_mext_pdf, ParseMextPdfError
+from backend.services.mext_pdf_parser import ParseMextPdfError, parse_mext_pdf
+from backend.services.question_generator import QuestionGenerationError, generate_question
 
-app = FastAPI(title="MiraStudy Backend API", version="0.1.0")
-# URL指定PDFダウンロード＆解析エンドポイント
+# SSRF 保護: PDF処理で許可するドメイン（C-001 準拠）
+_PDF_ALLOWED_DOMAINS: tuple[str, ...] = ("www.mext.go.jp", "mext.go.jp")
+_PDF_ALLOWED_SCHEMES: tuple[str, ...] = ("http", "https")
 
-
-@app.post("/api/pdf/process")
-async def pdf_process(payload: dict = Body(...)) -> dict[str, object]:
-    """
-    PDFのURLを受信し、ダウンロードして解析結果（テキスト・表データ）を返す。
-    失敗時は理由コード付きでfail-close。
-    """
-    url = payload.get("url")
-    if not url or not isinstance(url, str):
-        return {"status": "fail", "reason_code": "NO_URL", "message": "URLが指定されていません"}
-    try:
-        with urllib.request.urlopen(url) as response:
-            pdf_bytes = response.read()
-        result = parse_mext_pdf(pdf_bytes)
-        return {"status": "ok", "data": result}
-    except ParseMextPdfError as pe:
-        return {"status": "fail", "reason_code": pe.reason_code, "message": str(pe)}
-    except Exception as exc:
-        return {"status": "error", "reason_code": "UNEXPECTED_ERROR", "message": f"予期しないエラー: {exc}"}
-# PDFアップロード・解析エンドポイント
-
-
-@app.post("/api/pdf/upload")
-async def pdf_upload(file: UploadFile = File(...)) -> dict[str, object]:
-    """
-    PDFファイルを受信し、テキスト・表データを抽出して返す。
-    失敗時は理由コード付きでfail-close。
-    """
-    try:
-        content = await file.read()
-        result = parse_mext_pdf(content)
-        return {"status": "ok", "data": result}
-    except ParseMextPdfError as pe:
-        return {"status": "fail", "reason_code": pe.reason_code, "message": str(pe)}
-    except Exception as exc:
-        return {"status": "error", "reason_code": "UNEXPECTED_ERROR", "message": f"予期しないエラー: {exc}"}
-"""FastAPI バックエンドのエントリポイント。"""
-
+# アップロードファイルサイズ上限（DoS 対策、SEC-002 準拠）
+MAX_PDF_SIZE = 10 * 1024 * 1024  # 10MB
 
 # CORS オリジンの検証パターン（http(s)://で始まり、ワイルドカードを含まない）
 _ORIGIN_RE = _re.compile(r"^https?://[^*]+$")
@@ -86,17 +55,30 @@ def _get_cors_origins() -> list[str]:
     return merged
 
 
+def _is_safe_pdf_url(url: str) -> bool:
+    """URL が許可ドメインかつ安全なスキームであるか検証する（SSRF 対策）。"""
+    try:
+        parsed = urllib.parse.urlparse(url)
+    except Exception:
+        return False
+    if parsed.scheme not in _PDF_ALLOWED_SCHEMES:
+        return False
+    # パス部分が .pdf で終わることを確認（C-001 準拠）
+    if not parsed.path.lower().endswith('.pdf'):
+        return False
+    hostname = parsed.hostname or ""
+    return any(hostname == d or hostname.endswith("." + d) for d in _PDF_ALLOWED_DOMAINS)
+
+
 app = FastAPI(title="MiraStudy Backend API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_get_cors_origins(),
     allow_credentials=True,
-    allow_methods=["GET", "POST"],  # B-008: POSTも許可
+    allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
-
-# B-008: 問題生成エンドポイント
 
 
 @app.post("/api/question/generate")
@@ -136,3 +118,61 @@ def mext_fetch() -> dict[str, object]:
             "message": f"予期しないエラーが発生しました: {exc}",
             "reason_code": "UNEXPECTED_ERROR",
         }
+
+
+# B-009: PDF ダウンロード＆解析エンドポイント
+
+
+@app.post("/api/pdf/process")
+async def pdf_process(payload: dict = Body(...)) -> dict[str, object]:
+    """
+    PDFのURLを受信し、ダウンロードして解析結果（テキスト・表データ）を返す。
+    SSRF 保護付き: mext.go.jp ドメインのみ許可（C-001 準拠）。
+    失敗時は理由コード付きでfail-close。
+    """
+    url = payload.get("url")
+    if not url or not isinstance(url, str):
+        return {"status": "fail", "reason_code": "NO_URL", "message": "URLが指定されていません"}
+    if not _is_safe_pdf_url(url):
+        return {
+            "status": "fail",
+            "reason_code": "C001_INVALID_SOURCE_URL",
+            "message": "許可されていないURLです",
+        }
+    try:
+        req = urllib.request.Request(
+            url, headers={"User-Agent": "AyanaEducationBot/1.0"},
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            pdf_bytes = response.read()
+        result = parse_mext_pdf(pdf_bytes)
+        return {"status": "ok", "data": result}
+    except ParseMextPdfError as pe:
+        return {"status": "fail", "reason_code": pe.reason_code, "message": str(pe)}
+    except Exception as exc:
+        return {"status": "error", "reason_code": "UNEXPECTED_ERROR", "message": f"予期しないエラー: {exc}"}
+
+
+# B-009: PDF アップロード＆解析エンドポイント
+
+
+@app.post("/api/pdf/upload")
+async def pdf_upload(file: UploadFile = File(...)) -> dict[str, object]:
+    """
+    PDFファイルを受信し、テキスト・表データを抽出して返す。
+    失敗時は理由コード付きでfail-close。
+    """
+    try:
+        content = await file.read(MAX_PDF_SIZE + 1)
+        if len(content) > MAX_PDF_SIZE:
+            return {
+                "status": "fail",
+                "reason_code": "FILE_TOO_LARGE",
+                "message": f"ファイルサイズが上限（{MAX_PDF_SIZE // 1024 // 1024}MB）を超えています",
+            }
+        result = parse_mext_pdf(content)
+        return {"status": "ok", "data": result}
+    except ParseMextPdfError as pe:
+        return {"status": "fail", "reason_code": pe.reason_code, "message": str(pe)}
+    except Exception as exc:
+        return {"status": "error", "reason_code": "UNEXPECTED_ERROR", "message": f"予期しないエラー: {exc}"}

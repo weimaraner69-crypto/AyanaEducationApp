@@ -58,10 +58,37 @@ const EvidenceViewer = ({ isOpen, onClose, sourceUrl }) => {
 /**
  * クイズ画面（解析中アニメーション・問題表示を含む）
  */
-const Quiz = ({ inputData, academicStage, mode, sourceUrl, onBack, analysisStep, screen }) => {
+const Quiz = ({ inputData, academicStage, mode, sourceUrl, onBack, analysisStep, screen, questionData, apiError }) => {
   const [userAnswer, setUserAnswer] = useState('');
   const [showEvidenceViewer, setShowEvidenceViewer] = useState(false);
   const [showResult, setShowResult] = useState(null); // null | 'correct' | 'incorrect'
+
+  // API データまたはフォールバックの問題データ
+  const currentQuestion = questionData?.question || (academicStage === 'es'
+    ? "つぎの もんだいを といてみよう。\n\n 120 × 4 = （   ）"
+    : "次の日本文に合うように（ ）に適切な語を入れなさい。\n\n「私はテニスファンではありません。」\nI (   ) not a tennis fan.");
+  const currentAnswer = questionData?.answer || (academicStage === 'es' ? '480' : 'am');
+  const choices = questionData?.choices || [];
+
+  // API エラー画面
+  if (screen === 'quiz' && apiError) {
+    return (
+      <div data-testid="api-error-screen" className="min-h-screen bg-[#F8FAFC] px-4 py-6 sm:p-6 flex flex-col items-center justify-center text-slate-900">
+        <div className="w-full max-w-md space-y-6 text-center">
+          <div className="p-6 bg-rose-50 border-2 border-rose-200 rounded-2xl">
+            <p className="text-lg font-black text-rose-700 mb-2">エラーが発生しました</p>
+            <p className="text-sm text-rose-600" data-testid="api-error-message">{apiError}</p>
+          </div>
+          <button
+            onClick={onBack}
+            className="w-full py-5 bg-slate-600 text-white font-black text-lg rounded-[2.5rem] shadow-xl active:scale-95"
+          >
+            ホームに戻る
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // 解析中ローディング画面
   if (screen === 'analyzing') {
@@ -107,12 +134,27 @@ const Quiz = ({ inputData, academicStage, mode, sourceUrl, onBack, analysisStep,
         <div className="bg-white p-6 sm:p-10 rounded-[2.5rem] shadow-sm border-b-8 border-slate-100 min-h-[220px] flex items-center relative overflow-hidden text-center transition-all">
           <div className="absolute top-0 left-0 w-2 h-full bg-indigo-500/10"></div>
           <p className="leading-relaxed font-black text-xl whitespace-pre-wrap w-full">
-            {academicStage === 'es'
-              ? "つぎの もんだいを といてみよう。\n\n 120 × 4 = （   ）"
-              : "次の日本文に合うように（ ）に適切な語を入れなさい。\n\n「私はテニスファンではありません。」\nI (   ) not a tennis fan."}
+            {currentQuestion}
           </p>
         </div>
         <div className="space-y-4 text-center">
+          {choices.length > 0 && (
+            <div className="grid grid-cols-2 gap-3" data-testid="choices-container">
+              {choices.map((choice, index) => (
+                <button
+                  key={index}
+                  onClick={() => setUserAnswer(choice)}
+                  className={`p-4 rounded-2xl border-2 font-black text-left transition-all ${userAnswer === choice
+                      ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                    }`}
+                  data-testid={`choice-button-${index}`}
+                >
+                  {choice}
+                </button>
+              ))}
+            </div>
+          )}
           <input
             type="text"
             value={userAnswer}
@@ -129,7 +171,7 @@ const Quiz = ({ inputData, academicStage, mode, sourceUrl, onBack, analysisStep,
           </button>
           <button
             onClick={() => {
-              const isCorrect = userAnswer.trim().toLowerCase() === (academicStage === 'es' ? '480' : 'am');
+              const isCorrect = userAnswer.trim().toLowerCase() === currentAnswer.trim().toLowerCase();
               setShowResult(isCorrect ? 'correct' : 'incorrect');
             }}
             className="w-full py-5 sm:py-6 bg-indigo-600 text-white font-black text-lg sm:text-xl rounded-[2.5rem] shadow-2xl active:scale-95 transition-all shadow-indigo-100"
@@ -139,8 +181,8 @@ const Quiz = ({ inputData, academicStage, mode, sourceUrl, onBack, analysisStep,
           </button>
           {showResult && (
             <div className={`w-full p-6 rounded-2xl font-black text-center text-lg transition-all ${showResult === 'correct'
-                ? 'bg-emerald-100 border-2 border-emerald-500 text-emerald-700'
-                : 'bg-rose-100 border-2 border-rose-500 text-rose-700'
+              ? 'bg-emerald-100 border-2 border-emerald-500 text-emerald-700'
+              : 'bg-rose-100 border-2 border-rose-500 text-rose-700'
               }`} data-testid="result-message">
               {showResult === 'correct' ? '✓ 正解です！' : '✗ まちがいです。もう一度ためしてね'}
             </div>

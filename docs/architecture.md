@@ -7,7 +7,7 @@ MiraStudyアプリのフロントエンド（React）とバックエンド（Fas
 
 ## システム構成
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                    User (Browser)                        │
 └────────────────────┬────────────────────────────────────┘
@@ -33,6 +33,8 @@ MiraStudyアプリのフロントエンド（React）とバックエンド（Fas
 │  │  - /api/health                                     │ │
 │  │  - /api/mext/fetch (MEXT PDF取得・検証)            │ │
 │  │  - /api/question/generate (問題生成)               │ │
+│  │  - /api/pdf/process (PDF URL指定ダウンロード＆解析)│ │
+│  │  - /api/pdf/upload (PDFファイルアップロード＆解析) │ │
 │  └─────────────────┬──────────────────────────────────┘ │
 │                    │                                     │
 │  ┌─────────────────▼──────────────────────────────────┐ │
@@ -54,7 +56,7 @@ MiraStudyアプリのフロントエンド（React）とバックエンド（Fas
 
 ### Frontend (React)
 
-```
+```text
 frontend/
 ├─ public/
 │  ├─ index.html
@@ -81,7 +83,7 @@ frontend/
 
 ### Backend (FastAPI)
 
-```
+```text
 backend/
 ├─ main.py (FastAPIアプリケーション)
 ├─ routers/
@@ -105,25 +107,27 @@ backend/
 
 ### 1. ログイン・プロファイル選択
 
-```
+```text
 User → Login.jsx → プロファイル選択 → 学年計算 → Home.jsx表示
 ```
 
-### 2. 単元入力・問題生成
+### 2. 単元入力・問題生成（B-009: 2段階呼び出し）
 
-```
+```text
 1. User → SubjectSelector.jsx → 教科選択
 2. User → UnitInput.jsx → 単元名入力
-3. Frontend → POST /api/question/generate → Backend
-4. Backend → mext_fetcher.py → 文科省サイト → PDFダウンロード
-5. Backend → question_generator.py → 問題生成
+3. Frontend → GET /api/mext/fetch → Backend → 文科省サイト → 候補URL一覧取得
+4. Frontend → POST /api/pdf/process (processPdf) → Backend
+   - Backend: URL検証（SSRF保護 C-001）→ PDFダウンロード → parse_mext_pdf → テキスト・表データ返却
+5. Frontend → POST /api/question/generate (generateQuestion) → Backend
+   - Backend: PDF解析結果を受け取り → question_generator.py → 問題文・選択肢・正答生成
 6. Backend → Response → Frontend
 7. Frontend → Quiz.jsx → 問題表示
 ```
 
 ### 3. 保護者ダッシュボード（MEXT URL検証）
 
-```
+```text
 1. User → ParentDashboard.jsx → 「最新URLを取得」ボタンクリック
 2. Frontend → GET /api/mext/fetch → Backend
 3. Backend → mext_fetcher.py → 文科省サイトスクレイピング
@@ -151,6 +155,7 @@ User → Login.jsx → プロファイル選択 → 学年計算 → Home.jsx表
 - サービス層はルーターから独立してテスト可能にする
 
 **Phase 0 での例外（実装簡略化）:**
+
 - N-003（フロントエンド・バックエンド疎通確認）段階では、`App.jsx` が直接 `fetch` でヘルスチェックを呼び出すことを例外的に許容する
 - Phase 1 の B-001（コンポーネント分割）でアプリケーション構造が整備される際に、`services/api.js` を整備し、すべての API 呼び出しをそこ経由に統一する
 
@@ -219,7 +224,7 @@ User → Login.jsx → プロファイル選択 → 学年計算 → Home.jsx表
 
 ### CI/CD パイプライン
 
-```
+```text
 1. Push to feature branch
    ↓
 2. GitHub Actions
@@ -236,11 +241,11 @@ User → Login.jsx → プロファイル選択 → 学年計算 → Home.jsx表
 
 ### 環境変数管理
 
-| 変数名                    | 用途                     | 設定場所           |
-| ------------------------- | ------------------------ | ------------------ |
-| REACT_APP_API_URL         | バックエンドAPIのURL     | Vercel環境変数     |
-| BACKEND_CORS_ORIGINS      | 許可するCORSオリジン     | Render/Railway環境変数 |
-| MEXT_RATE_LIMIT           | 文科省サイトへのレート制限 | Render/Railway環境変数 |
+| 変数名               | 用途                           | 設定場所               |
+| -------------------- | ------------------------------ | ---------------------- |
+| REACT_APP_API_URL    | バックエンドAPIのURL           | Vercel環境変数         |
+| BACKEND_CORS_ORIGINS | 許可するCORSオリジン           | Render/Railway環境変数 |
+| MEXT_RATE_LIMIT      | 文科省サイトへのレート制限     | Render/Railway環境変数 |
 
 ## 設計論点（必要に応じて ADR）
 
@@ -248,4 +253,6 @@ User → Login.jsx → プロファイル選択 → 学年計算 → Home.jsx表
 - バックエンドのデータベース導入タイミング → Phase 4で検討（学習履歴保存時）
 - AI問題生成の実装方法（OpenAI API or ローカルモデル） → Phase 2で決定
 
-````
+```text
+（設計論点は随時追記）
+```

@@ -51,6 +51,7 @@ SKIP_DIR_NAMES = {
 # ホワイトリスト（パスの相対表記）— 誤検知を除外するファイル
 SKIP_FILES: set[str] = {
     "ci/policy_check.py",  # 自分自身のパターン定義は除外
+    "tests/test_backend_pdf_process.py",  # SSRF保護テスト用の悪意URLは意図的な使用
 }
 
 # ---------------------------------------------------------------------------
